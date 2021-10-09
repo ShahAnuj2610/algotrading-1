@@ -19,7 +19,7 @@ class TicksDB:
             try:
                 tok = self.instruments_db.get_symbol_from_instrument_token(tick['instrument_token'])
                 vals = [datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), tick['last_price'], tick['last_quantity']]
-                query = "INSERT INTO {} (ts,price,volume) VALUES (?,?,?)".format(tok)
+                query = "INSERT OR REPLACE INTO {} (ts,price,volume) VALUES (?,?,?)".format(tok)
                 c.execute(query, vals)
             except:
                 logging.error("Exception while inserting ticks: " + traceback.format_exc())

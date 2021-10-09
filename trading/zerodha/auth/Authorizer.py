@@ -1,5 +1,6 @@
 import time
 import logging
+import pyotp
 
 from kiteconnect import KiteConnect
 from selenium import webdriver
@@ -47,8 +48,9 @@ class Authorizer:
         password = driver.find_element_by_id("password")
         password.send_keys(self.kite_login_password)
         driver.find_element_by_class_name("button-orange").click()
-        pin = driver.find_element_by_id("pin")
-        pin.send_keys("230264")
+        pin = driver.find_element_by_id("totp")
+        code = pyotp.TOTP("***")
+        pin.send_keys(code.now())
         driver.find_element_by_class_name("button-orange").click()
         time.sleep(5)
         tokens = driver.current_url.split('&')

@@ -1,6 +1,7 @@
 import logging
 
 from trading.errors.DataNotAvailableError import DataNotAvailableError
+from trading.errors.NoCashError import NoCashError
 from trading.workers.WorkerThread import WorkerThread
 
 
@@ -20,8 +21,5 @@ class StrategyRunner(WorkerThread):
                 ind.calculate_lines(candle_time)
 
             self.strategy.act(candle_time)
-        except DataNotAvailableError as e:
+        except (DataNotAvailableError, NoCashError):
             pass
-
-
-

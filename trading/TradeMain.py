@@ -1,5 +1,6 @@
 import logging
 import sys
+import time
 from datetime import datetime
 
 import pandas as pd
@@ -10,6 +11,7 @@ from trading.db.InstrumentsDB import InstrumentsDB
 from trading.db.SymbolsDB import SymbolsDB
 from trading.db.TicksDB import TicksDB
 from trading.strategies.SuperTrend33Strategy import SuperTrend33Strategy
+from trading.workers.AutoSqaureOffWorker import AutoSquareOffWorker
 from trading.workers.StrategyRunner import StrategyRunner
 from trading.zerodha.auth.Authorizer import Authorizer
 from trading.zerodha.kite.Ticks import Ticks
@@ -33,26 +35,27 @@ class TradeMain:
     def trade(self):
         ticks_db_path = "trading/store/ticks.db"
         exchange = "NSE"
-        symbols = ["APOLLOHOSP"]
+        symbols = ["TVSMOTOR"]
 
         # All zerodha related objects initialise here
         authorizer = Authorizer(AccessTokenDB(ticks_db_path))
         kite = authorizer.get_authorized_kite_object()
+        kite.orders()
         logging.info("Authorized with kite connect successfully")
 
         # All DBs initialise here
         instruments_db = InstrumentsDB(kite, exchange)
-        SymbolsDB(symbols, ticks_db_path, instruments_db)
+        SymbolsDB(symbols, ticks_db_path)
 
         # We want to start at the strike of every minute
         init_time = datetime.now()
         logging.info("Sleeping {} seconds to synchronize with minutes".format(60 - init_time.second))
-        # time.sleep(60 - init_time.second)
+        time.sleep(60 - init_time.second)
 
         ticks = Ticks(symbols, ticks_db_path, instruments_db)
         on_ticks = ticks.on_ticks
         on_connect = ticks.on_connect
-        # listen_to_market(kite, on_ticks, on_connect)
+        listen_to_market(kite, on_ticks, on_connect)
 
         logging.info("Available cash {}".format(kite.margins("equity")['net']))
         threads = []
@@ -68,6 +71,7 @@ class TradeMain:
 
             threads.append(StrategyRunner(kite, strategy=strategy))
 
+        threads.append(AutoSquareOffWorker(kite))
         # Start all threads
         for t in threads:
             t.start()

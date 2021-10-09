@@ -4,9 +4,8 @@ import traceback
 
 
 class SymbolsDB:
-    def __init__(self, symbols, db_path, instruments_db):
+    def __init__(self, symbols, db_path):
         self.symbols = symbols
-        self.instruments_db = instruments_db
         self.db = sqlite3.connect(db_path)
 
         for symbol in symbols:

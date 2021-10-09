@@ -59,7 +59,7 @@ class Indicator(ABC):
         return df.copy()
 
     def get_ticks(self, start_time, end_time):
-        logging.info("Fetching ticks data for {} from {} till {}".format(self.symbol, start_time, end_time))
+        logging.debug("Fetching ticks data for {} from {} till {}".format(self.symbol, start_time, end_time))
         ticks_db = TicksDB(self.db_path, self.instruments_db)
         df = ticks_db.get_ticks(self.symbol, start_time, end_time)
         ticks_db.close()
@@ -100,8 +100,8 @@ class Indicator(ABC):
         actual_candles, expected_candles = self.get_actual_and_expected_candles(actual_candles_in, expected_candles)
 
         if actual_candles != expected_candles:
-            logging.info("Expected candles: {} for indicator: {}".format(expected_candles, self.indicator_name))
-            logging.info("Actual candles: {} for indicator: {}".format(str(actual_candles), self.indicator_name))
+            logging.debug("Expected candles: {} for indicator: {}".format(expected_candles, self.indicator_name))
+            logging.debug("Actual candles: {} for indicator: {}".format(str(actual_candles), self.indicator_name))
 
             raise DataNotAvailableError("Data not available")
 
