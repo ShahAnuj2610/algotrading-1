@@ -6,14 +6,16 @@ from trading.strategies.Strategy import Strategy
 from trading.zerodha.kite.Period import Period
 
 
-class SuperTrend33Strategy(Strategy):
-    def __init__(self, kite, **kwargs):
+class SuperTrend73Strategy(Strategy):
+    def __init__(self, kite, symbol, **kwargs):
         # Initialise all strategy params
         self.candle_length = 7
         self.candle_interval = 1
         self.period = Period.MIN
         self.multiplier = 3
-        self.symbol = kwargs['symbol']
+        # This initialisation is necessary for the strategies to access the value
+        # DO NOT remove this thinking it is redundant
+        self.symbol = symbol
 
         # Initialise all indicators
         self.true_range_indicator = TrueRange(self, **kwargs)
@@ -22,10 +24,10 @@ class SuperTrend33Strategy(Strategy):
         self.super_trend_band_indicator = SuperTrendBand(self, multiplier=self.multiplier, **kwargs)
 
         self.super_trend_indicator = SuperTrend(self, **kwargs)
-
         # The order of the indicators matter
         # Ordered by dependencies
         super().__init__(kite,
+                         symbol,
                          [
                              self.true_range_indicator,
                              self.average_true_range_indicator,

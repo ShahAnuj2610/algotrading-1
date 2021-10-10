@@ -6,10 +6,10 @@ from trading.workers.WorkerThread import WorkerThread
 
 
 class StrategyRunner(WorkerThread):
-    def __init__(self, kite, **kwargs):
+    def __init__(self, kite, strategy, **kwargs):
         super().__init__(kite, **kwargs)
 
-        self.strategy = kwargs['strategy']
+        self.strategy = strategy
 
     def do_run(self, candle_time):
         logging.info(

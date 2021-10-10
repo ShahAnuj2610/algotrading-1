@@ -1,7 +1,7 @@
 import random
 import pandas as pd
 
-from backtesting.data.symbols.SymbolsDataFetcher import SymbolsDataFetcher
+from trading.data.symbols.SymbolsDataFetcher import SymbolsDataFetcher
 
 
 class NSESymbolsDataFetcher(SymbolsDataFetcher):

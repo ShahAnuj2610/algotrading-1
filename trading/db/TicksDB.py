@@ -9,8 +9,8 @@ from trading.zerodha.kite.Retry import retry
 
 
 class TicksDB:
-    def __init__(self, db_path, instruments_db):
-        self.db = sqlite3.connect(db_path)
+    def __init__(self, ticks_db_path, instruments_db):
+        self.db = sqlite3.connect(ticks_db_path)
         self.instruments_db = instruments_db
 
     def insert_ticks(self, ticks):

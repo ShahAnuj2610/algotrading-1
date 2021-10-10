@@ -1,17 +1,21 @@
 import logging
+import sqlite3
+import sys
+import traceback
 from abc import ABC, abstractmethod
 
+from trading.constants import EXCHANGE, TICKS_DB_PATH
 from trading.zerodha.kite.Orders import Orders
 from trading.zerodha.kite.Period import Period
 
 
 class Strategy(ABC):
-    def __init__(self, kite, indicators, **kwargs):
+    def __init__(self, kite, symbol, indicators, **kwargs):
         self.kite = kite
         self.indicators = indicators
 
-        self.exchange = kwargs['exchange']
-        self.symbol = kwargs['symbol']
+        self.exchange = EXCHANGE
+        self.symbol = str(symbol)
 
         self.period = Period.MIN
         self.candle_length = 7
@@ -23,6 +27,9 @@ class Strategy(ABC):
         self.all_positions = []
         self.long_positions = []
         self.short_positions = []
+
+        # Prepare the ticks database to receive ticks for this symbol
+        self.create_symbols_ticks_table()
 
     @abstractmethod
     def act(self, candle_time):
@@ -39,6 +46,23 @@ class Strategy(ABC):
 
     def get_candle_interval(self):
         return self.candle_interval
+
+    def create_symbols_ticks_table(self):
+        db = sqlite3.connect(TICKS_DB_PATH)
+
+        c = db.cursor()
+        table_name = self.symbol  # + "-" + str(self.suffix)
+        c.execute(
+            "CREATE TABLE IF NOT EXISTS {} (ts datetime primary key, price real(15,5), volume integer)".format(
+                table_name))
+        try:
+            db.commit()
+        except Exception as e:
+            print(e)
+            print(traceback.format_exc())
+            sys.exit(1)
+
+        db.close()
 
     def can_order(self, candle_time):
         current_hour = candle_time.hour
@@ -87,8 +111,6 @@ class Strategy(ABC):
             "order_id": order_id,
             "candle_time": candle_time
         })
-
-        print(self.long_positions)
 
     def enter_short_position(self, candle_time, price, stoploss_price):
         if not self.can_order(candle_time):

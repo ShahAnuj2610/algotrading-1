@@ -1,14 +1,19 @@
 from backtrader.feeds import GenericCSVData
 from nsepy import get_history
-from backtesting.data.historical.DataFetcher import DataFetcher
+from trading.data.historical.DataFetcher import DataFetcher
+from trading.zerodha.kite.Retry import retry
 
 
 class NSEDataFetcher(DataFetcher):
+    """
+    Gets historical OHLC data for the given symbol from NSE website. It uses NSEpy library to get the data
+    """
     def __init__(self, store_helper):
         self.store_helper = store_helper
 
         super().__init__()
 
+    @retry(tries=5, delay=2, backoff=2)
     def get_data(self, symbol, to_date, from_date):
         return get_history(symbol=symbol, start=from_date, end=to_date)
 

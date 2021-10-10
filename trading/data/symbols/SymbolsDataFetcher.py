@@ -10,9 +10,9 @@ class SymbolsDataFetcher(ABC):
         pass
 
     @abstractmethod
-    def get_n_symbols(self):
+    def get_n_symbols(self, n):
         pass
 
     @abstractmethod
-    def get_n_symbols_with_listing_newer_than_date(self):
+    def get_n_symbols_with_listing_newer_than_date(self, n, d):
         pass

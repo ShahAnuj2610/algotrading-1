@@ -5,9 +5,9 @@ from datetime import timedelta
 import backtrader as bt
 import pandas as pd
 
-from backtesting.data.historical.DataFetcherFactory import DataFetcherFactory
-from backtesting.data.symbols.SymbolsDataFetcherFactory import SymbolsDataFetcherFactory
-from backtesting.helpers.StoreHelper import StoreHelper
+from trading.data.historical.DataFetcherFactory import DataFetcherFactory
+from trading.data.symbols.SymbolsDataFetcherFactory import SymbolsDataFetcherFactory
+from trading.helpers.StoreHelper import StoreHelper
 
 
 class Test(ABC):

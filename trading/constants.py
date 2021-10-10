@@ -1,0 +1,5 @@
+STORE_PATH = "trading/store/"
+TICKS_DB_PATH = STORE_PATH + "ticks.db"
+SCREENER_DB_PATH = STORE_PATH + "screener.db"
+EXCHANGE = "NSE"
+SUPER_TREND_STRATEGY_7_3 = "SuperTrendStrategy73"

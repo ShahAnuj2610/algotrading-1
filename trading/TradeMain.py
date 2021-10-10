@@ -6,18 +6,25 @@ from datetime import datetime
 import pandas as pd
 from kiteconnect import KiteTicker
 
+from trading.constants import TICKS_DB_PATH, EXCHANGE, SUPER_TREND_STRATEGY_7_3
 from trading.db.AccessTokenDB import AccessTokenDB
 from trading.db.InstrumentsDB import InstrumentsDB
-from trading.db.SymbolsDB import SymbolsDB
 from trading.db.TicksDB import TicksDB
-from trading.strategies.SuperTrend33Strategy import SuperTrend33Strategy
+from trading.factory.StrategyFactory import StrategyFactory
 from trading.workers.AutoSqaureOffWorker import AutoSquareOffWorker
-from trading.workers.StrategyRunner import StrategyRunner
 from trading.zerodha.auth.Authorizer import Authorizer
 from trading.zerodha.kite.Ticks import Ticks
 
 
-def listen_to_market(kite, on_ticks, on_connect):
+def listen_to_market(kite, symbols):
+    instruments_db = InstrumentsDB(kite, EXCHANGE)
+    ticks = Ticks(symbols, TICKS_DB_PATH, instruments_db)
+    on_ticks = ticks.on_ticks
+    on_connect = ticks.on_connect
+    do_listen_to_market(kite, on_ticks, on_connect)
+
+
+def do_listen_to_market(kite, on_ticks, on_connect):
     logging.info("Connecting to market")
     kite_ticker = KiteTicker(kite.api_key, kite.access_token)
 
@@ -27,65 +34,55 @@ def listen_to_market(kite, on_ticks, on_connect):
     logging.info("Started listening to market")
 
 
-class TradeMain:
-    def __init__(self):
-        logging.basicConfig(format='%(asctime)s :: %(levelname)s :: %(message)s', level=logging.INFO)
-        pass
+def authorize():
+    authorizer = Authorizer(AccessTokenDB(TICKS_DB_PATH))
+    kite = authorizer.get_authorized_kite_object()
+    logging.info("Authorized with kite connect successfully")
+    return kite
 
-    def trade(self):
-        ticks_db_path = "trading/store/ticks.db"
-        exchange = "NSE"
-        symbols = ["TVSMOTOR"]
 
-        # All zerodha related objects initialise here
-        authorizer = Authorizer(AccessTokenDB(ticks_db_path))
-        kite = authorizer.get_authorized_kite_object()
-        kite.orders()
-        logging.info("Authorized with kite connect successfully")
+def start_threads_and_wait(threads):
+    # We want to start at the strike of every minute
+    init_time = datetime.now()
+    logging.info("Sleeping {} seconds to synchronize with minutes".format(60 - init_time.second))
+    time.sleep(60 - init_time.second)
 
-        # All DBs initialise here
-        instruments_db = InstrumentsDB(kite, exchange)
-        SymbolsDB(symbols, ticks_db_path)
+    # Start all threads
+    for t in threads:
+        t.start()
 
-        # We want to start at the strike of every minute
-        init_time = datetime.now()
-        logging.info("Sleeping {} seconds to synchronize with minutes".format(60 - init_time.second))
-        time.sleep(60 - init_time.second)
+    # Wait for all of them to finish
+    for t in threads:
+        t.join()
 
-        ticks = Ticks(symbols, ticks_db_path, instruments_db)
-        on_ticks = ticks.on_ticks
-        on_connect = ticks.on_connect
-        listen_to_market(kite, on_ticks, on_connect)
 
-        logging.info("Available cash {}".format(kite.margins("equity")['net']))
-        threads = []
+def get_ohlc_for_time(instruments_db, ticks_db_path):
+    _db = TicksDB(ticks_db_path, instruments_db)
+    _df = _db.get_ticks('APOLLOHOSP', '2021-09-28 12:35:00', '2021-09-28 12:39:00')
+    _ticks = _df.loc[:, ['price']]
+    resampled_df = _ticks['price'].resample('1Min').ohlc()
+    resampled_df.index = pd.to_datetime(resampled_df.index)
+    resampled_df = resampled_df.sort_index(ascending=True)
+    print(resampled_df)
+    sys.exit(0)
 
-        # self.get_ohlc_for_time(instruments_db, ticks_db_path)
 
-        for symbol in symbols:
-            strategy = SuperTrend33Strategy(kite,
-                                            exchange=exchange,
-                                            symbol=symbol,
-                                            db_path=ticks_db_path,
-                                            instruments_db=instruments_db)
+def trade():
+    logging.basicConfig(format='%(asctime)s :: %(levelname)s :: %(message)s', level=logging.INFO)
 
-            threads.append(StrategyRunner(kite, strategy=strategy))
+    kite = authorize()
 
-        threads.append(AutoSquareOffWorker(kite))
-        # Start all threads
-        for t in threads:
-            t.start()
+    logging.info("Available cash {}".format(kite.margins("equity")['net']))
 
-        # Wait for all of them to finish
-        for t in threads:
-            t.join()
+    threads = []
+    threads.extend(StrategyFactory(kite).get_strategies(SUPER_TREND_STRATEGY_7_3))
+    threads.append(AutoSquareOffWorker(kite))
 
-    def get_ohlc_for_time(self, instruments_db, ticks_db_path):
-        _db = TicksDB(ticks_db_path, instruments_db)
-        _df = _db.get_ticks('APOLLOHOSP', '2021-09-28 12:35:00', '2021-09-28 12:39:00')
-        _ticks = _df.loc[:, ['price']]
-        resampled_df = _ticks['price'].resample('1Min').ohlc()
-        resampled_df.index = pd.to_datetime(resampled_df.index)
-        resampled_df = resampled_df.sort_index(ascending=True)
-        print(resampled_df)
-        sys.exit(0)
+    symbols = []
+    for worker in threads:
+        if hasattr(worker, 'strategy'):
+            symbols.append(worker.strategy.symbol)
+
+    # listen_to_market(kite, symbols)
+
+    # start_threads_and_wait(threads)

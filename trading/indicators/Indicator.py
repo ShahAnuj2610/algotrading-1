@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 
 import pandas as pd
 
+from trading.constants import TICKS_DB_PATH
 from trading.db.TicksDB import TicksDB
 from trading.errors.DataNotAvailableError import DataNotAvailableError
 from trading.zerodha.kite.Period import Period
@@ -22,11 +23,10 @@ class Indicator(ABC):
         self.candle_length = strategy.get_candle_length()
         self.candle_interval = strategy.get_candle_interval()
 
-        self.db_path = kwargs['db_path']
-        self.instruments_db = kwargs['instruments_db']
+        self.ticks_db_path = TICKS_DB_PATH
 
-        if not self.db_path or not self.instruments_db:
-            raise ValueError("DB Path or instruments db are missing")
+        if not self.ticks_db_path:
+            raise ValueError("Ticks DB Path is missing")
 
         if self.period == Period.MIN:
             self.resample_time = str(self.candle_interval) + 'Min'
@@ -60,7 +60,8 @@ class Indicator(ABC):
 
     def get_ticks(self, start_time, end_time):
         logging.debug("Fetching ticks data for {} from {} till {}".format(self.symbol, start_time, end_time))
-        ticks_db = TicksDB(self.db_path, self.instruments_db)
+        # We do not require reference to instruments database here because we already have the symbol name
+        ticks_db = TicksDB(self.ticks_db_path, None)
         df = ticks_db.get_ticks(self.symbol, start_time, end_time)
         ticks_db.close()
 
