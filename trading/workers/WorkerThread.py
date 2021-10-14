@@ -31,7 +31,7 @@ class WorkerThread(threading.Thread, ABC):
 
             if current_hour == 15 and current_minute > 30:
                 logging.info("Market has ended. Current hour {} Current minute {}. "
-                             "Exiting thread and recording indicator values".format(current_hour, current_minute))
+                             "Exiting thread and recording state".format(current_hour, current_minute))
                 self.stop(candle_time)
                 break
 

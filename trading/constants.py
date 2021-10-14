@@ -1,4 +1,5 @@
 STORE_PATH = "trading/store/"
+ACCESS_TOKEN_DB_PATH = STORE_PATH + "db/auth/auth.db"
 TICKS_DB_PATH = STORE_PATH + "ticks.db"
 SCREENER_DB_PATH = STORE_PATH + "screener.db"
 STRATEGY_DB_PATH = STORE_PATH + "db/strategies/"

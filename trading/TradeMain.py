@@ -1,24 +1,22 @@
 import logging
 import sys
-import time
 from datetime import datetime
 
 import pandas as pd
 from kiteconnect import KiteTicker
 
-from trading.constants import TICKS_DB_PATH, EXCHANGE, SUPER_TREND_STRATEGY_7_3, PARABOLIC_SAR
-from trading.db.AccessTokenDB import AccessTokenDB
-from trading.db.InstrumentsDB import InstrumentsDB
-from trading.db.TicksDB import TicksDB
+from trading.constants import EXCHANGE, SUPER_TREND_STRATEGY_7_3, PARABOLIC_SAR
+from trading.helpers.TicksDB import TicksDB
 from trading.factory.StrategyFactory import StrategyFactory
-from trading.workers.AutoSqaureOffWorker import AutoSquareOffWorker
+from trading.helpers.AccessTokenHelper import AccessTokenHelper
+from trading.helpers.InstrumentsHelper import InstrumentsHelper
 from trading.zerodha.auth.Authorizer import Authorizer
 from trading.zerodha.kite.Ticks import Ticks
 
 
 def listen_to_market(kite, symbols):
-    instruments_db = InstrumentsDB(kite, EXCHANGE)
-    ticks = Ticks(symbols, TICKS_DB_PATH, instruments_db)
+    instruments_helper = InstrumentsHelper(kite, EXCHANGE)
+    ticks = Ticks(symbols, instruments_helper)
     on_ticks = ticks.on_ticks
     on_connect = ticks.on_connect
     do_listen_to_market(kite, on_ticks, on_connect)
@@ -35,7 +33,7 @@ def do_listen_to_market(kite, on_ticks, on_connect):
 
 
 def authorize():
-    authorizer = Authorizer(AccessTokenDB(TICKS_DB_PATH))
+    authorizer = Authorizer(AccessTokenHelper())
     kite = authorizer.get_authorized_kite_object()
     logging.info("Authorized with kite connect successfully")
     return kite
@@ -58,8 +56,8 @@ def start_threads_and_wait(threads):
         t.join()
 
 
-def get_ohlc_for_time(instruments_db, ticks_db_path):
-    _db = TicksDB(ticks_db_path, instruments_db)
+def get_ohlc_for_time(instruments_helper):
+    _db = TicksDB(instruments_helper)
     _df = _db.get_ticks('APOLLOHOSP', '2021-09-28 12:35:00', '2021-09-28 12:39:00')
     _ticks = _df.loc[:, ['price']]
     resampled_df = _ticks['price'].resample('1Min').ohlc()
@@ -77,7 +75,7 @@ def trade():
     logging.info("Available cash {}".format(kite.margins("equity")['net']))
 
     threads = []
-    threads.extend(StrategyFactory(kite).get_strategies(PARABOLIC_SAR))
+    # threads.extend(StrategyFactory(kite).get_strategies(PARABOLIC_SAR))
     threads.extend(StrategyFactory(kite).get_strategies(SUPER_TREND_STRATEGY_7_3))
     # threads.append(AutoSquareOffWorker(kite))
 

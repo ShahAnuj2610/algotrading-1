@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-class InstrumentsDB:
+class InstrumentsHelper:
     def __init__(self, kite, exchange):
         self.kite = kite
         self.exchange = exchange

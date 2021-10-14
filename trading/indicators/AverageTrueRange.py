@@ -13,7 +13,7 @@ class AverageTrueRange(Indicator):
             raise ValueError("True range indicator is not initialised")
 
     def calculate_lines(self, candle_time):
-        atr_df = self.values.tail(1)
+        atr_df = self.get_previous_indicator_value(candle_time)
         if atr_df.empty:
             self.calculate_atr(candle_time)
             return
@@ -44,6 +44,7 @@ class AverageTrueRange(Indicator):
         df.loc[tr_df.index[0], 'low'] = tr_df['low'][0]
         df.loc[tr_df.index[0], 'close'] = tr_df['close'][0]
         df.loc[tr_df.index[0], self.indicator_name] = new_atr
+        df.index.names = ['ts']
 
         self.store_indicator_value(df.tail(1), candle_time)
 

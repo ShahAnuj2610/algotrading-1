@@ -6,11 +6,12 @@ import traceback
 
 import pandas as pd
 
+from trading.constants import ACCESS_TOKEN_DB_PATH
 
-class AccessTokenDB:
-    def __init__(self, db_path):
-        logging.basicConfig(format='%(asctime)s :: %(levelname)s :: %(message)s', level=logging.INFO)
-        self.db = sqlite3.connect(db_path)
+
+class AccessTokenHelper:
+    def __init__(self):
+        self.db = sqlite3.connect(ACCESS_TOKEN_DB_PATH)
         self.table_name = "AccessToken"
 
         c = self.db.cursor()

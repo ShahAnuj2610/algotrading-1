@@ -8,7 +8,7 @@ class SuperTrend(Indicator):
         super().__init__(self.__class__.__name__, strategy, **kwargs)
 
     def calculate_lines(self, candle_time):
-        st_df = self.values.tail(1)
+        st_df = self.get_previous_indicator_value(candle_time)
         if st_df.empty:
             prev_indicator = 0.0
             prev_color = "na"

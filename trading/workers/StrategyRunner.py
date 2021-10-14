@@ -15,7 +15,6 @@ class StrategyRunner(WorkerThread):
         logging.info(
             "Running strategy {} for symbol {}".format(self.strategy.__class__.__name__, self.strategy.symbol))
 
-        current_min = candle_time
         try:
             for ind in self.strategy.get_indicators():
                 logging.info(

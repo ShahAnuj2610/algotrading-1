@@ -1,6 +1,3 @@
-from backtesting.tests.crossover.SMACrossOverTest import SMACrossOverTest
-from backtesting.tests.trend.SuperTrendTest import SuperTrendTest
-from trading.ScreenerMain import ScreenerMain
 from trading.TradeMain import trade
 
 if __name__ == '__main__':

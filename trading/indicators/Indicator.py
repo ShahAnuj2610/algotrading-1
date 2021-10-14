@@ -5,7 +5,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 
 from trading.constants import TICKS_DB_PATH, STRATEGY_DB_PATH
-from trading.db.TicksDB import TicksDB
+from trading.helpers.TicksDB import TicksDB
 from trading.errors.DataNotAvailableError import DataNotAvailableError
 from trading.zerodha.kite.Period import Period
 from trading.zerodha.kite.TimeSequencer import get_previous_time, get_time_sequence
@@ -27,7 +27,7 @@ class Indicator(ABC):
         self.ticks_db_path = TICKS_DB_PATH
         self.indicator_db_path = STRATEGY_DB_PATH + self.strategy.__class__.__name__ + "_" + str(self.candle_interval) \
                                  + "_" + str(self.period.name) + ".db"
-        self.indicator_table_name = self.symbol
+        self.indicator_table_name = self.symbol + "_" + self.indicator_name
 
         if not self.ticks_db_path:
             raise ValueError("Ticks DB Path is missing")
@@ -65,7 +65,7 @@ class Indicator(ABC):
     def get_ticks(self, start_time, end_time):
         logging.debug("Fetching ticks data for {} from {} till {}".format(self.symbol, start_time, end_time))
         # We do not require reference to instruments database here because we already have the symbol name
-        ticks_db = TicksDB(self.ticks_db_path, None)
+        ticks_db = TicksDB(None)
         df = ticks_db.get_ticks(self.symbol, start_time, end_time)
         ticks_db.close()
 
