@@ -1,3 +1,5 @@
+import logging
+
 from trading.indicators.AverageTrueRange import AverageTrueRange
 from trading.indicators.SuperTrend import SuperTrend
 from trading.indicators.SuperTrendBand import SuperTrendBand
@@ -46,9 +48,11 @@ class SuperTrend73Strategy(Strategy):
         curr_price = super_trend['close'][1]
 
         if (prev_color == "na" and new_color == "red") or (prev_color == "green" and new_color == "red"):
-            self.enter_short_position(candle_time, curr_price, new_super_trend_value)
+            logging.info("Entering short position at {}".format(candle_time))
+            # self.enter_short_position(candle_time, curr_price, new_super_trend_value)
         elif (prev_color == "na" and new_color == "green") or (prev_color == "red" and new_color == "green"):
-            self.enter_long_position(candle_time, curr_price, new_super_trend_value)
+            logging.info("Entering long position at {}".format(candle_time))
+            # self.enter_long_position(candle_time, curr_price, new_super_trend_value)
 
     def get_true_range_indicator(self):
         return self.true_range_indicator

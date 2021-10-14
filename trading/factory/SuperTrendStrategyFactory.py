@@ -27,6 +27,7 @@ class SuperTrendStrategyFactory:
             cnx = create_engine(f"sqlite:///" + SCREENER_DB_PATH).connect()
             df = pd.read_sql_table("PreviousDayMaxMover", cnx)
             df = df[df['Symbol'].apply(lambda s: not s[0].isdigit())]
+            df = df[df['Close'] > 20]
             df = df.sort_values(by=['Move'], ascending=False)
             # Just pick the top 5 moving stocks
             # The direction is not mentioned. Hence we can go long or short

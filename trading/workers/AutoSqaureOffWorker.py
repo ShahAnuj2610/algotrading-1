@@ -25,3 +25,6 @@ class AutoSquareOffWorker(WorkerThread):
                             "Squaring off positions".format(current_hour, current_minute))
 
             self.auto_square_off.square_off()
+
+    def stop(self, candle_time):
+        pass

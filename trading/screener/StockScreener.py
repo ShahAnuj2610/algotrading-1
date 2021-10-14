@@ -27,7 +27,7 @@ class StockScreener(ABC):
         Screens for individual conditions determined by the strategies
         :return: Pandas dataframe containing OHLC for all the stocks that have passed the filter
         """
-        symbols_df = self.data_fetcher.get_n_symbols(self.symbols_sample_space)
+        symbols_df = self.data_fetcher.get_symbols_allowed_for_intraday()
         return self.do_screen(symbols_df)
 
     @abstractmethod

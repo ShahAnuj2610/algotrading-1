@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
-from trading.constants import SUPER_TREND_STRATEGY_7_3
+from trading.constants import SUPER_TREND_STRATEGY_7_3, PARABOLIC_SAR
+from trading.factory.ParabolicSARStrategyFactory import ParabolicSARStrategyFactory
 from trading.factory.SuperTrendStrategyFactory import SuperTrendStrategyFactory
 
 
@@ -12,3 +13,5 @@ class StrategyFactory(ABC):
     def get_strategies(self, name):
         if name == SUPER_TREND_STRATEGY_7_3:
             return SuperTrendStrategyFactory(self.kite).get_strategies(name)
+        elif name == PARABOLIC_SAR:
+            return ParabolicSARStrategyFactory(self.kite).get_strategies(name)

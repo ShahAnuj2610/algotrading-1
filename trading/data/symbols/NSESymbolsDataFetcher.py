@@ -10,6 +10,7 @@ class NSESymbolsDataFetcher(SymbolsDataFetcher):
 
         self.df = store_helper.read_csv_as_df('All_Equity_Symbols_NSE.csv')
         self.df[' DATE OF LISTING'] = pd.to_datetime(self.df[' DATE OF LISTING']).dt.date
+        self.mis_df = store_helper.read_csv_as_df('AllowedScripsForMIS.csv')
 
     def get_all_symbols(self):
         return self.df['SYMBOL'].toList()
@@ -22,3 +23,7 @@ class NSESymbolsDataFetcher(SymbolsDataFetcher):
         _df = self.df[self.df[' DATE OF LISTING'] < d]
         symbols_list = _df['SYMBOL'].tolist()
         return random.sample(symbols_list, n)
+
+    def get_symbols_allowed_for_intraday(self):
+        symbols_list = self.mis_df['Stocks allowed for MIS'].tolist()
+        return symbols_list

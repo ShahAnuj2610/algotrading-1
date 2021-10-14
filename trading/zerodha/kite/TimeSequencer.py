@@ -64,7 +64,7 @@ def get_previous_trading_day():
     """
     now = datetime.datetime.now()
 
-    if now.weekday() == 5 or now.weekday() == 6 or (now.weekday() == 0 and now.hour == 9 and now.hour <= 15):
+    if now.weekday() == 5 or now.weekday() == 6 or (now.weekday() == 0 and now.hour <= 15):
         # if its a saturday, sunday or monday (before market hours), then find the last active trading day
         # Reuses the get_time_sequence function which assumes it will not be called in the after market hours
         # Hence we mimic by mutating the current time

@@ -207,7 +207,7 @@ class Orders:
 
     @retry(tries=5, delay=2, backoff=2)
     def get_available_cash(self):
-        return self.kite.margins("equity")['available']['cash']
+        return self.kite.margins()['equity']['available']['live_balance']
 
     def get_transaction_type(self, transaction_type):
         if transaction_type == "buy":

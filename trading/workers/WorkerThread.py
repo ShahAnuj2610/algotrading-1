@@ -18,30 +18,40 @@ class WorkerThread(threading.Thread, ABC):
         self.kite = kite
 
     def run(self):
-        # candle_time = datetime.datetime(2021, 9, 28, 12, 30, 0)
+        # Uncomment me for test!
+        candle_time = datetime.datetime(2021, 10, 11, 14, 30, 0)
 
         start_time = time.time()
 
         while True:
-            candle_time = datetime.datetime.now().replace(microsecond=0)
+            # Comment me for tests!
+            # candle_time = datetime.datetime.now().replace(microsecond=0)
             current_hour = candle_time.hour
             current_minute = candle_time.minute
+
+            if current_hour == 15 and current_minute > 30:
+                logging.info("Market has ended. Current hour {} Current minute {}. "
+                             "Exiting thread and recording indicator values".format(current_hour, current_minute))
+                self.stop(candle_time)
+                break
 
             # Reset the second to 0. We are only concerned about the minute
             # There could a few milliseconds or probably 1 or 2 seconds difference
             # For our use case it is okay
             self.do_run(candle_time.replace(second=0))
 
-            if current_hour == 15 and current_minute > 30:
-                logging.info("Market has ended. Current hour {} Current minute {}. "
-                             "Exiting thread".format(current_hour, current_minute))
-                break
+            # Comment me for tests!
+            # self.sleep(start_time)
 
-            self.sleep(start_time)
-            # candle_time = candle_time + datetime.timedelta(minutes=1)
+            # Uncomment me for tests!
+            candle_time = candle_time + datetime.timedelta(minutes=1)
 
     @abstractmethod
     def do_run(self, candle_time):
+        pass
+
+    @abstractmethod
+    def stop(self, candle_time):
         pass
 
     def sleep(self, start_time):

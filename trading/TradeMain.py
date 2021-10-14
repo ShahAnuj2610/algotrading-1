@@ -6,7 +6,7 @@ from datetime import datetime
 import pandas as pd
 from kiteconnect import KiteTicker
 
-from trading.constants import TICKS_DB_PATH, EXCHANGE, SUPER_TREND_STRATEGY_7_3
+from trading.constants import TICKS_DB_PATH, EXCHANGE, SUPER_TREND_STRATEGY_7_3, PARABOLIC_SAR
 from trading.db.AccessTokenDB import AccessTokenDB
 from trading.db.InstrumentsDB import InstrumentsDB
 from trading.db.TicksDB import TicksDB
@@ -45,7 +45,9 @@ def start_threads_and_wait(threads):
     # We want to start at the strike of every minute
     init_time = datetime.now()
     logging.info("Sleeping {} seconds to synchronize with minutes".format(60 - init_time.second))
-    time.sleep(60 - init_time.second)
+
+    # Comment me for tests!
+    # time.sleep(60 - init_time.second)
 
     # Start all threads
     for t in threads:
@@ -75,8 +77,9 @@ def trade():
     logging.info("Available cash {}".format(kite.margins("equity")['net']))
 
     threads = []
+    threads.extend(StrategyFactory(kite).get_strategies(PARABOLIC_SAR))
     threads.extend(StrategyFactory(kite).get_strategies(SUPER_TREND_STRATEGY_7_3))
-    threads.append(AutoSquareOffWorker(kite))
+    # threads.append(AutoSquareOffWorker(kite))
 
     symbols = []
     for worker in threads:
@@ -85,4 +88,4 @@ def trade():
 
     # listen_to_market(kite, symbols)
 
-    # start_threads_and_wait(threads)
+    start_threads_and_wait(threads)

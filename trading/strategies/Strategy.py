@@ -1,6 +1,7 @@
 import logging
 import sqlite3
 import sys
+import time
 import traceback
 from abc import ABC, abstractmethod
 
@@ -78,7 +79,7 @@ class Strategy(ABC):
 
     def enter_long_position(self, candle_time, price, stoploss_price):
         if not self.can_order(candle_time):
-            pass
+            return
 
         if len(self.long_positions) != 0:
             raise ValueError("Entering long position for symbol {} at {} when we are already long??".format(
@@ -101,9 +102,12 @@ class Strategy(ABC):
             # self.orders.cancel_regular_order(stoploss_order_id)
             self.short_positions.clear()
 
+            # Pausing for margins to get reflected
+            time.sleep(5)
+
         logging.info("Entering new long position for symbol {} at {}".format(self.symbol, candle_time))
 
-        order_id, stoploss_order_id, quantity = \
+        order_id, quantity = \
             self.orders.buy_intraday_regular_market_order(self.symbol, price)
 
         self.long_positions.append({
@@ -114,7 +118,7 @@ class Strategy(ABC):
 
     def enter_short_position(self, candle_time, price, stoploss_price):
         if not self.can_order(candle_time):
-            pass
+            return
 
         if len(self.short_positions) > 0:
             raise ValueError("Entering short position for symbol {} at {} when we are already short??".format(
@@ -137,9 +141,12 @@ class Strategy(ABC):
             # self.orders.cancel_regular_order(stoploss_order_id)
             self.long_positions.clear()
 
+            # Pausing for margins to get reflected
+            time.sleep(5)
+
         logging.info("Entering new short position for symbol {} at {}".format(self.symbol, candle_time))
 
-        order_id, stoploss_order_id, quantity = \
+        order_id, quantity = \
             self.orders.sell_intraday_regular_market_order(self.symbol, price)
 
         self.short_positions.append({
