@@ -12,12 +12,12 @@ class StrategyRunner(WorkerThread):
         self.strategy = strategy
 
     def do_run(self, candle_time):
-        logging.info(
+        logging.debug(
             "Running strategy {} for symbol {}".format(self.strategy.__class__.__name__, self.strategy.symbol))
 
         try:
             for ind in self.strategy.get_indicators():
-                logging.info(
+                logging.debug(
                     "Running indicator {} for symbol {}".format(ind.__class__.__name__, self.strategy.symbol))
                 ind.calculate_lines(candle_time)
 

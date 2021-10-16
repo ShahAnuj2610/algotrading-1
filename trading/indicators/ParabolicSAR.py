@@ -8,7 +8,7 @@ class ParabolicSAR(Indicator):
         self.af = 0.02
         self.max_af = 0.20
 
-    def calculate_lines(self, candle_time):
+    def do_calculate_lines(self, candle_time):
         ticks_df = self.get_data_from_ticks(candle_time)
         sar_df = self.get_previous_indicator_value(candle_time)
 

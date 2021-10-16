@@ -5,7 +5,7 @@ from datetime import datetime
 import pandas as pd
 from kiteconnect import KiteTicker
 
-from trading.constants import EXCHANGE, SUPER_TREND_STRATEGY_7_3, PARABOLIC_SAR
+from trading.constants import EXCHANGE, SUPER_TREND_STRATEGY_7_3, PARABOLIC_SAR, BACK_TEST
 from trading.helpers.TicksDB import TicksDB
 from trading.factory.StrategyFactory import StrategyFactory
 from trading.helpers.AccessTokenHelper import AccessTokenHelper
@@ -75,8 +75,10 @@ def trade():
     logging.info("Available cash {}".format(kite.margins("equity")['net']))
 
     threads = []
-    # threads.extend(StrategyFactory(kite).get_strategies(PARABOLIC_SAR))
-    threads.extend(StrategyFactory(kite).get_strategies(SUPER_TREND_STRATEGY_7_3))
+    mode = BACK_TEST
+
+    # threads.extend(StrategyFactory(kite, mode).get_strategies(PARABOLIC_SAR))
+    threads.extend(StrategyFactory(kite, mode).get_strategies(SUPER_TREND_STRATEGY_7_3))
     # threads.append(AutoSquareOffWorker(kite))
 
     symbols = []

@@ -85,6 +85,28 @@ def get_missing_time(actual_time_list, expected_time_list):
     return list(set(expected_time_list) - set(actual_time_list))
 
 
+def get_allowed_time_slots(period, candle_interval):
+    """
+    Finds on what time slots can the indicator run. This depends on the candle interval
+    For example, if its a 1 min candle, then it can run on 09:16, 09:17, ... , 14:20, 14:21, ... , 15:29, 15:30
+    If its a 2 min candle, 09:17, 09:19, ... , 15:25, 15:27, 15:29
+    If its a 15 min candle, 09:30, 09:45, ... , 15:00, 15:15, 15:30
+    :return: a list of allowed time slots
+    """
+    start_time = datetime.datetime.now()
+    end_time = start_time.replace(hour=15, minute=30, second=0, microsecond=0)
+    start_time = start_time.replace(hour=9, minute=15, second=0, microsecond=0)
+    delta = get_time_delta(period, candle_interval)
+    start_time = start_time + delta
+
+    allowed_time_slots = []
+
+    while start_time <= end_time:
+        allowed_time_slots.append(start_time.strftime('%H:%M'))
+        start_time = start_time + delta
+
+    return allowed_time_slots
+
 '''
 print(get_time_sequence(Period.MIN, 1, 7, datetime.datetime(year=2021,
                                                             month=9,
@@ -93,4 +115,5 @@ print(get_time_sequence(Period.MIN, 1, 7, datetime.datetime(year=2021,
                                                             minute=55,
                                                             second=59,
                                                             microsecond=0)))
+print(get_allowed_time_slots(Period.MIN, 3))
 '''

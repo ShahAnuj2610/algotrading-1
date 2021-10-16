@@ -14,8 +14,9 @@ class SuperTrendStrategyFactory:
     """
     Constructs a super trend strategy based on the desired candle length and multiplier
     """
-    def __init__(self, kite):
+    def __init__(self, kite, mode):
         self.kite = kite
+        self.mode = mode
 
     def get_strategies(self, name):
         """
@@ -48,6 +49,9 @@ class SuperTrendStrategyFactory:
 
         for symbol in symbols:
             if name == SUPER_TREND_STRATEGY_7_3:
-                strategy_workers.append(StrategyRunner(self.kite, SuperTrend73Strategy(self.kite, symbol)))
+                strategy_workers.append(StrategyRunner(self.kite,
+                                                       SuperTrend73Strategy(self.kite, symbol,
+                                                                            candle_interval=1,
+                                                                            mode=self.mode)))
 
         return strategy_workers

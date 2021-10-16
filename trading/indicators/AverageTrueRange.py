@@ -12,7 +12,7 @@ class AverageTrueRange(Indicator):
         if not self.true_range:
             raise ValueError("True range indicator is not initialised")
 
-    def calculate_lines(self, candle_time):
+    def do_calculate_lines(self, candle_time):
         atr_df = self.get_previous_indicator_value(candle_time)
         if atr_df.empty:
             self.calculate_atr(candle_time)

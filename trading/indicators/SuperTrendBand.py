@@ -10,7 +10,7 @@ class SuperTrendBand(Indicator):
 
         super().__init__(self.__class__.__name__, strategy, **kwargs)
 
-    def calculate_lines(self, candle_time):
+    def do_calculate_lines(self, candle_time):
         st_band_df = self.get_previous_indicator_value(candle_time)
         if st_band_df.empty:
             self.calculate_super_trend_band(candle_time)

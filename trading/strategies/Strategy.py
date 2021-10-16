@@ -5,9 +5,9 @@ import time
 import traceback
 from abc import ABC, abstractmethod
 
-from trading.constants import EXCHANGE, TICKS_DB_PATH
+from trading.constants import EXCHANGE, TICKS_DB_PATH, BACK_TEST
+from trading.zerodha.kite.BackTestOrders import BackTestOrders
 from trading.zerodha.kite.Orders import Orders
-from trading.zerodha.kite.Period import Period
 
 
 class Strategy(ABC):
@@ -18,16 +18,24 @@ class Strategy(ABC):
         self.exchange = EXCHANGE
         self.symbol = str(symbol)
 
-        self.period = Period.MIN
-        self.candle_length = 7
-        self.candle_interval = 1
         self.leverage = 5
         self.order_pct = 0.50
 
-        self.orders = Orders(self.kite, self.leverage, self.order_pct, self.exchange)
+        self.mode = kwargs['mode']
+
+        if self.mode == BACK_TEST:
+            self.orders = BackTestOrders(self.kite, self.leverage, self.order_pct, self.exchange)
+        else:
+            self.orders = Orders(self.kite, self.leverage, self.order_pct, self.exchange)
+
         self.all_positions = []
         self.long_positions = []
         self.short_positions = []
+
+        # Keeps track of how we are doing with the strategy
+        # Strategies can occasionally check how good or bad it is doing
+        # Can be used as a circuit breaker too
+        self.net_income = 0.0
 
         # Prepare the ticks database to receive ticks for this symbol
         self.create_symbols_ticks_table()
@@ -47,6 +55,13 @@ class Strategy(ABC):
 
     def get_candle_interval(self):
         return self.candle_interval
+
+    def get_mode(self):
+        """
+        Determines whether it is back test or not
+        :return:
+        """
+        return self.mode
 
     def create_symbols_ticks_table(self):
         db = sqlite3.connect(TICKS_DB_PATH)

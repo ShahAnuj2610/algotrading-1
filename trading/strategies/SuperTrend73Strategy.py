@@ -12,7 +12,7 @@ class SuperTrend73Strategy(Strategy):
     def __init__(self, kite, symbol, **kwargs):
         # Initialise all strategy params
         self.candle_length = 7
-        self.candle_interval = 1
+        self.candle_interval = kwargs['candle_interval']
         self.period = Period.MIN
         self.multiplier = 3
         # This initialisation is necessary for the strategies to access the value

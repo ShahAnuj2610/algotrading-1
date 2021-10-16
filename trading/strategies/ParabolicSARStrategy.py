@@ -9,7 +9,7 @@ class ParabolicSARStrategy(Strategy):
     def __init__(self, kite, symbol, **kwargs):
         # Initialise all strategy params
         self.candle_length = 2
-        self.candle_interval = 1
+        self.candle_interval = kwargs['candle_interval']
         self.period = Period.MIN
 
         # This initialisation is necessary for the strategies to access the value
@@ -38,11 +38,9 @@ class ParabolicSARStrategy(Strategy):
         curr_price = parabolic_sar['close'][1]
 
         if (prev_color == "na" and new_color == "red") or (prev_color == "green" and new_color == "red"):
-            logging.info("Entering short position at {}".format(candle_time))
-            # self.enter_short_position(candle_time, curr_price, new_sar_value)
+            self.enter_short_position(candle_time, curr_price, new_sar_value)
         elif (prev_color == "na" and new_color == "green") or (prev_color == "red" and new_color == "green"):
-            logging.info("Entering long position at {}".format(candle_time))
-            # self.enter_long_position(candle_time, curr_price, new_sar_value)
+            self.enter_long_position(candle_time, curr_price, new_sar_value)
 
     def get_parabolic_sar_indicator(self):
         return self.parabolic_sar_indicator

@@ -1,3 +1,4 @@
+import datetime
 import logging
 from abc import ABC, abstractmethod
 
@@ -8,7 +9,7 @@ from trading.constants import TICKS_DB_PATH, STRATEGY_DB_PATH
 from trading.helpers.TicksDB import TicksDB
 from trading.errors.DataNotAvailableError import DataNotAvailableError
 from trading.zerodha.kite.Period import Period
-from trading.zerodha.kite.TimeSequencer import get_previous_time, get_time_sequence
+from trading.zerodha.kite.TimeSequencer import get_previous_time, get_time_sequence, get_allowed_time_slots
 
 
 class Indicator(ABC):
@@ -38,8 +39,18 @@ class Indicator(ABC):
         # Historical dataframe
         self.values = self.load_indicator_values()
 
-    @abstractmethod
+        # Allowed time slots at which the indicator can run
+        # This depends on the candle interval. i.e 1 min, 2 min, etc
+        self.allowed_time_slots = get_allowed_time_slots(self.period, self.candle_interval)
+
     def calculate_lines(self, candle_time):
+        if candle_time.strftime('%H:%M') in self.allowed_time_slots:
+            self.do_calculate_lines(candle_time)
+        else:
+            logging.debug("Indicator {} not running on candle time {}".format(self.indicator_name, candle_time))
+
+    @abstractmethod
+    def do_calculate_lines(self, candle_time):
         pass
 
     def get_previous_indicator_time(self, candle_time):
@@ -50,7 +61,7 @@ class Indicator(ABC):
             return df
 
         ticks = df.loc[:, ['price']]
-        resampled_df = ticks['price'].resample(self.resample_time).ohlc()
+        resampled_df = ticks['price'].resample(self.resample_time, base=1).ohlc()
         resampled_df.index = pd.to_datetime(resampled_df.index)
         resampled_df = resampled_df.sort_index(ascending=True)
         # resampled_df.dropna(inplace=True)

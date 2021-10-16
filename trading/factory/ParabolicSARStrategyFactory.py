@@ -13,8 +13,9 @@ class ParabolicSARStrategyFactory:
     """
     Constructs a parabolic SAR strategy based on the desired candle length
     """
-    def __init__(self, kite):
+    def __init__(self, kite, mode):
         self.kite = kite
+        self.mode = mode
 
     def get_strategies(self, name):
         """
@@ -48,6 +49,9 @@ class ParabolicSARStrategyFactory:
 
         for symbol in symbols:
             if name == PARABOLIC_SAR:
-                strategy_workers.append(StrategyRunner(self.kite, ParabolicSARStrategy(self.kite, symbol)))
+                strategy_workers.append(StrategyRunner(self.kite,
+                                                       ParabolicSARStrategy(self.kite, symbol,
+                                                                            candle_interval=1,
+                                                                            mode=self.mode)))
 
         return strategy_workers
