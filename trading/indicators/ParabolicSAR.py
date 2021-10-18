@@ -9,18 +9,19 @@ class ParabolicSAR(Indicator):
         self.max_af = 0.20
 
     def do_calculate_lines(self, candle_time):
-        ticks_df = self.get_data_from_ticks(candle_time)
         sar_df = self.get_previous_indicator_value(candle_time)
 
         if sar_df.empty:
+            ticks_df = self.get_data(candle_time)
             self.calculate_sar(ticks_df, candle_time)
             return
 
-        ticks_df = ticks_df.tail(1)
+        ticks_df = self.get_data_for_time(candle_time)
+
         df = sar_df.append(ticks_df)
         self.validate_candles_and_throw(df, reversed(self.get_n_candle_sequence(2, candle_time)))
 
-        if self.current_trade == "long":
+        if df['color'][0] == "green":
             self.calculate_sar_from_long_trade(df, candle_time)
         else:
             self.calculate_sar_from_short_trade(df, candle_time)
@@ -38,7 +39,6 @@ class ParabolicSAR(Indicator):
             if df['high'][i] > df[self.indicator_name][i - 1]:
                 # Reset acceleration factor
                 self.af = 0.02
-                self.current_trade = "long"
 
                 df.loc[ind[i], 'EP'] = df['high'][i]
 
@@ -80,7 +80,6 @@ class ParabolicSAR(Indicator):
             if df['low'][i] < df[self.indicator_name][i - 1]:
                 # Reset acceleration factor
                 self.af = 0.02
-                self.current_trade = "short"
 
                 df.loc[ind[i], 'EP'] = df['low'][i]
 
@@ -126,7 +125,6 @@ class ParabolicSAR(Indicator):
             df[self.indicator_name] = psar + (self.af * (df['EP'] - psar))
             df['color'] = "green"
             df['AF'] = self.af
-            self.current_trade = "long"
         else:
             # We are in down trend
             df['EP'] = df['low']
@@ -134,6 +132,5 @@ class ParabolicSAR(Indicator):
             df[self.indicator_name] = psar - (self.af * (psar - df['EP']))
             df['color'] = "red"
             df['AF'] = self.af
-            self.current_trade = "short"
 
         return df

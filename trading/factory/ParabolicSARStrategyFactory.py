@@ -13,9 +13,10 @@ class ParabolicSARStrategyFactory:
     """
     Constructs a parabolic SAR strategy based on the desired candle length
     """
-    def __init__(self, kite, mode):
+    def __init__(self, kite, mode, instruments_helper):
         self.kite = kite
         self.mode = mode
+        self.instruments_helper = instruments_helper
 
     def get_strategies(self, name):
         """
@@ -27,7 +28,7 @@ class ParabolicSARStrategyFactory:
             cnx = create_engine(f"sqlite:///" + SCREENER_DB_PATH).connect()
             df = pd.read_sql_table("PreviousDayMaxMover", cnx)
             df = df[df['Symbol'].apply(lambda s: not s[0].isdigit())]
-            df = df[df['Close'] > 20]
+            df = df[df['close'] > 20]
             df = df.sort_values(by=['Move'], ascending=False)
             # Just pick the top 5 moving stocks
             # The direction is not mentioned. Hence we can go long or short
@@ -45,13 +46,15 @@ class ParabolicSARStrategyFactory:
             symbols = ["TVSMOTOR"]
 
         strategy_workers = []
-        symbols = ["IEX"]
+
+        symbols = symbols[:1]
 
         for symbol in symbols:
             if name == PARABOLIC_SAR:
                 strategy_workers.append(StrategyRunner(self.kite,
                                                        ParabolicSARStrategy(self.kite, symbol,
-                                                                            candle_interval=1,
+                                                                            candle_interval=3,
+                                                                            instruments_helper=self.instruments_helper,
                                                                             mode=self.mode)))
 
         return strategy_workers

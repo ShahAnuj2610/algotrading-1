@@ -1,4 +1,3 @@
-import datetime
 import logging
 from abc import ABC, abstractmethod
 
@@ -6,10 +5,9 @@ import pandas as pd
 from sqlalchemy import create_engine
 
 from trading.constants import TICKS_DB_PATH, STRATEGY_DB_PATH
-from trading.helpers.TicksDB import TicksDB
+from trading.data.DataManagerFactory import DataManagerFactory
 from trading.errors.DataNotAvailableError import DataNotAvailableError
-from trading.zerodha.kite.Period import Period
-from trading.zerodha.kite.TimeSequencer import get_previous_time, get_time_sequence, get_allowed_time_slots
+from trading.zerodha.kite.TimeSequencer import get_previous_time, get_time_sequence
 
 
 class Indicator(ABC):
@@ -25,29 +23,20 @@ class Indicator(ABC):
         self.candle_length = strategy.get_candle_length()
         self.candle_interval = strategy.get_candle_interval()
 
+        self.mode = strategy.get_mode()
+        self.kite = strategy.get_kite_object()
+        self.instruments_helper = kwargs['instruments_helper']
+
         self.ticks_db_path = TICKS_DB_PATH
         self.indicator_db_path = STRATEGY_DB_PATH + self.strategy.__class__.__name__ + "_" + str(self.candle_interval) \
                                  + "_" + str(self.period.name) + ".db"
         self.indicator_table_name = self.symbol + "_" + self.indicator_name
 
-        if not self.ticks_db_path:
-            raise ValueError("Ticks DB Path is missing")
-
-        if self.period == Period.MIN:
-            self.resample_time = str(self.candle_interval) + 'Min'
-
         # Historical dataframe
         self.values = self.load_indicator_values()
 
-        # Allowed time slots at which the indicator can run
-        # This depends on the candle interval. i.e 1 min, 2 min, etc
-        self.allowed_time_slots = get_allowed_time_slots(self.period, self.candle_interval)
-
     def calculate_lines(self, candle_time):
-        if candle_time.strftime('%H:%M') in self.allowed_time_slots:
-            self.do_calculate_lines(candle_time)
-        else:
-            logging.debug("Indicator {} not running on candle time {}".format(self.indicator_name, candle_time))
+        self.do_calculate_lines(candle_time)
 
     @abstractmethod
     def do_calculate_lines(self, candle_time):
@@ -56,44 +45,42 @@ class Indicator(ABC):
     def get_previous_indicator_time(self, candle_time):
         return get_previous_time(self.period, self.candle_interval, candle_time)
 
-    def resample_data(self, df):
-        if df.empty:
-            return df
-
-        ticks = df.loc[:, ['price']]
-        resampled_df = ticks['price'].resample(self.resample_time, base=1).ohlc()
-        resampled_df.index = pd.to_datetime(resampled_df.index)
-        resampled_df = resampled_df.sort_index(ascending=True)
-        # resampled_df.dropna(inplace=True)
-        return resampled_df
-
     def get_lines(self, n, candle_time):
         candle_sequence = self.get_n_candle_sequence(n, candle_time)
         df = self.values.tail(n)
         self.validate_candles(df, reversed(candle_sequence))
         return df.copy()
 
-    def get_ticks(self, start_time, end_time):
-        logging.debug("Fetching ticks data for {} from {} till {}".format(self.symbol, start_time, end_time))
-        # We do not require reference to instruments database here because we already have the symbol name
-        ticks_db = TicksDB(None)
-        df = ticks_db.get_ticks(self.symbol, start_time, end_time)
-        ticks_db.close()
-
-        return df
-
     def store_indicator_value(self, df, candle_time):
         self.validate_candles_and_throw(df, [self.get_previous_indicator_time(candle_time)])
         self.values = self.values.append(df)
 
-    def get_data_from_ticks(self, candle_end_time):
+    def get_data(self, candle_end_time):
         candle_sequence = self.get_candle_sequence(candle_end_time)
         candle_start_time = candle_sequence[-1]
 
-        ticks = self.get_ticks(candle_start_time, candle_end_time)
-        df = self.resample_data(ticks)
+        df = self.do_get_data(candle_start_time, candle_end_time)
 
         self.validate_candles(df, reversed(candle_sequence))
+
+        return df.copy()
+
+    def get_data_for_time(self, candle_end_time):
+        candle_start_time = get_previous_time(self.period, self.candle_interval, candle_end_time)
+
+        df = self.do_get_data(candle_start_time, candle_end_time)
+
+        self.validate_candles(df, [candle_start_time])
+
+        return df.copy()
+
+    def do_get_data(self, start_time, end_time):
+        data_fetcher = DataManagerFactory(self.kite, self.mode).\
+            get_object(period=self.period,
+                       candle_interval=self.candle_interval,
+                       instruments_helper=self.instruments_helper)
+        df = data_fetcher.get_data(self.symbol, start_time, end_time)
+        data_fetcher.close()
 
         return df
 

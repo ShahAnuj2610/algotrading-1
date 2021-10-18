@@ -1,5 +1,3 @@
-import logging
-
 from trading.indicators.ParabolicSAR import ParabolicSAR
 from trading.strategies.Strategy import Strategy
 from trading.zerodha.kite.Period import Period
@@ -8,7 +6,9 @@ from trading.zerodha.kite.Period import Period
 class ParabolicSARStrategy(Strategy):
     def __init__(self, kite, symbol, **kwargs):
         # Initialise all strategy params
+        self.kite = kite
         self.candle_length = 2
+        self.mode = kwargs['mode']
         self.candle_interval = kwargs['candle_interval']
         self.period = Period.MIN
 

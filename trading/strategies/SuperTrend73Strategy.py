@@ -10,8 +10,11 @@ from trading.zerodha.kite.Period import Period
 
 class SuperTrend73Strategy(Strategy):
     def __init__(self, kite, symbol, **kwargs):
+        self.kite = kite
+
         # Initialise all strategy params
         self.candle_length = 7
+        self.mode = kwargs['mode']
         self.candle_interval = kwargs['candle_interval']
         self.period = Period.MIN
         self.multiplier = 3
@@ -48,11 +51,9 @@ class SuperTrend73Strategy(Strategy):
         curr_price = super_trend['close'][1]
 
         if (prev_color == "na" and new_color == "red") or (prev_color == "green" and new_color == "red"):
-            logging.info("Entering short position at {}".format(candle_time))
-            # self.enter_short_position(candle_time, curr_price, new_super_trend_value)
+            self.enter_short_position(candle_time, curr_price, new_super_trend_value)
         elif (prev_color == "na" and new_color == "green") or (prev_color == "red" and new_color == "green"):
-            logging.info("Entering long position at {}".format(candle_time))
-            # self.enter_long_position(candle_time, curr_price, new_super_trend_value)
+            self.enter_long_position(candle_time, curr_price, new_super_trend_value)
 
     def get_true_range_indicator(self):
         return self.true_range_indicator

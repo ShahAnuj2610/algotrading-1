@@ -9,7 +9,7 @@ class TrueRange(Indicator):
         self.candle_length = 2
 
     def do_calculate_lines(self, candle_time):
-        df = self.get_data_from_ticks(candle_time)
+        df = self.get_data(candle_time)
 
         df['H-L'] = abs(df['high'] - df['low'])
         df['H-PC'] = abs(df['high'] - df['close'].shift(1))

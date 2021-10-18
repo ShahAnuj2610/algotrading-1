@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
 
-from trading.constants import STORE_PATH, EXCHANGE
-from trading.data.historical.DataFetcherFactory import DataFetcherFactory
+from trading.constants import STORE_PATH, EXCHANGE, SCREEN
+from trading.data.DataManagerFactory import DataManagerFactory
 from trading.data.symbols.SymbolsDataFetcherFactory import SymbolsDataFetcherFactory
+from trading.helpers.InstrumentsHelper import InstrumentsHelper
 from trading.helpers.StoreHelper import StoreHelper
+from trading.zerodha.kite.Period import Period
 
 
 class StockScreener(ABC):
@@ -11,16 +13,21 @@ class StockScreener(ABC):
     Class to screen stocks on which strategies will be applied.
     Each strategy will have different criteria for selecting stocks and they should use the appropriate screener
     """
-    def __init__(self):
+
+    def __init__(self, kite):
+        self.kite = kite
         self.store_helper = StoreHelper(STORE_PATH)
         self.data_fetcher = SymbolsDataFetcherFactory(self.store_helper).get_object(EXCHANGE)
-        self.historical_data_fetcher = DataFetcherFactory(self.store_helper).get_object(EXCHANGE)
+
+        # The current period for screening is DAY
+        self.historical_data_manager = DataManagerFactory(kite, SCREEN).get_object(period=Period.DAY,
+                                                                                   candle_interval=1,
+                                                                                   instruments_helper=InstrumentsHelper(
+                                                                                       self.kite, EXCHANGE)
+                                                                                   )
         # 500 random symbols from the desired exchange
         self.symbols_sample_space = 500
         pass
-
-    def _type(self):
-        return self.__class__.__name__
 
     def screen(self):
         """

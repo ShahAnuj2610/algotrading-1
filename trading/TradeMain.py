@@ -1,21 +1,19 @@
 import logging
+import sqlite3
 import sys
+import traceback
 from datetime import datetime
 
-import pandas as pd
 from kiteconnect import KiteTicker
 
-from trading.constants import EXCHANGE, SUPER_TREND_STRATEGY_7_3, PARABOLIC_SAR, BACK_TEST
-from trading.helpers.TicksDB import TicksDB
+from trading.constants import EXCHANGE, BACK_TEST, LIVE, TICKS_DB_PATH, PARABOLIC_SAR
+from trading.data.DataManagerFactory import DataManagerFactory
 from trading.factory.StrategyFactory import StrategyFactory
-from trading.helpers.AccessTokenHelper import AccessTokenHelper
 from trading.helpers.InstrumentsHelper import InstrumentsHelper
-from trading.zerodha.auth.Authorizer import Authorizer
 from trading.zerodha.kite.Ticks import Ticks
 
 
-def listen_to_market(kite, symbols):
-    instruments_helper = InstrumentsHelper(kite, EXCHANGE)
+def listen_to_market(kite, symbols, instruments_helper):
     ticks = Ticks(symbols, instruments_helper)
     on_ticks = ticks.on_ticks
     on_connect = ticks.on_connect
@@ -30,13 +28,6 @@ def do_listen_to_market(kite, on_ticks, on_connect):
     kite_ticker.on_connect = on_connect
     kite_ticker.connect(threaded=True)
     logging.info("Started listening to market")
-
-
-def authorize():
-    authorizer = Authorizer(AccessTokenHelper())
-    kite = authorizer.get_authorized_kite_object()
-    logging.info("Authorized with kite connect successfully")
-    return kite
 
 
 def start_threads_and_wait(threads):
@@ -56,36 +47,80 @@ def start_threads_and_wait(threads):
         t.join()
 
 
-def get_ohlc_for_time(instruments_helper):
-    _db = TicksDB(instruments_helper)
-    _df = _db.get_ticks('APOLLOHOSP', '2021-09-28 12:35:00', '2021-09-28 12:39:00')
-    _ticks = _df.loc[:, ['price']]
-    resampled_df = _ticks['price'].resample('1Min').ohlc()
-    resampled_df.index = pd.to_datetime(resampled_df.index)
-    resampled_df = resampled_df.sort_index(ascending=True)
-    print(resampled_df)
-    sys.exit(0)
+def initialize_symbol_for_live_trade(symbol):
+    db = sqlite3.connect(TICKS_DB_PATH)
+
+    c = db.cursor()
+    table_name = symbol  # + "-" + str(self.suffix)
+    c.execute(
+        "CREATE TABLE IF NOT EXISTS {} (ts datetime primary key, price real(15,5), volume integer)".format(
+            table_name))
+    try:
+        db.commit()
+    except Exception as e:
+        print(e)
+        print(traceback.format_exc())
+        sys.exit(1)
+
+    db.close()
 
 
-def trade():
+def initialize_symbols_for_live_trade(symbols):
+    for symbol in symbols:
+        initialize_symbol_for_live_trade(symbol)
+
+
+def initialize_symbols_for_back_test(strategies, instruments_helper, start_time, end_time):
+    for strategy in strategies:
+        initialize_symbol_for_back_test(strategy, instruments_helper, start_time, end_time)
+
+
+def initialize_symbol_for_back_test(strategy, instruments_helper, start_time, end_time):
+    data_manager = DataManagerFactory(strategy.get_kite_object(), strategy.get_mode()).get_object(
+                                             period=strategy.get_period(),
+                                             candle_interval=strategy.get_candle_interval(),
+                                             instruments_helper=instruments_helper
+                                             )
+
+    data_manager.put_data(strategy.get_symbol(), start_time, end_time)
+    data_manager.close()
+
+
+def trade(kite):
     logging.basicConfig(format='%(asctime)s :: %(levelname)s :: %(message)s', level=logging.INFO)
 
-    kite = authorize()
-
-    logging.info("Available cash {}".format(kite.margins("equity")['net']))
+    instruments_helper = InstrumentsHelper(kite, EXCHANGE)
 
     threads = []
     mode = BACK_TEST
+    # mode = LIVE
 
-    # threads.extend(StrategyFactory(kite, mode).get_strategies(PARABOLIC_SAR))
-    threads.extend(StrategyFactory(kite, mode).get_strategies(SUPER_TREND_STRATEGY_7_3))
+    threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(PARABOLIC_SAR))
+    # threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(SUPER_TREND_STRATEGY_7_3))
     # threads.append(AutoSquareOffWorker(kite))
 
+    # Collect all the symbols that our strategies want to act on
+    # Then, listen to the market for those symbols
     symbols = []
+    strategies = []
     for worker in threads:
         if hasattr(worker, 'strategy'):
+            strategies.append(worker.strategy)
             symbols.append(worker.strategy.symbol)
 
-    # listen_to_market(kite, symbols)
+    # Different strategies can run for the same symbol
+    unique_symbols = list(set(symbols))
+
+    if mode == LIVE:
+        initialize_symbols_for_live_trade(unique_symbols)
+        logging.info("Db for symbols {} initialised in {}".format(','.join(unique_symbols), TICKS_DB_PATH))
+        listen_to_market(kite, symbols, instruments_helper)
+    elif mode == BACK_TEST:
+        initialize_symbols_for_back_test(
+            strategies,
+            instruments_helper,
+            datetime.today().replace(year=2021, month=10, day=18, hour=9, minute=15, second=0, microsecond=0),
+            datetime.today().replace(year=2021, month=10, day=18, hour=15, minute=30, second=0, microsecond=0)
+        )
 
     start_threads_and_wait(threads)

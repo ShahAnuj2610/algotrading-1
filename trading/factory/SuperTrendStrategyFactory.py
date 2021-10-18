@@ -5,7 +5,6 @@ import pandas as pd
 from sqlalchemy import create_engine
 
 from trading.constants import SUPER_TREND_STRATEGY_7_3, SCREENER_DB_PATH
-from trading.screener.PreviousDayMaxMover import PreviousDayMaxMover
 from trading.strategies.SuperTrend73Strategy import SuperTrend73Strategy
 from trading.workers.StrategyRunner import StrategyRunner
 
@@ -14,9 +13,10 @@ class SuperTrendStrategyFactory:
     """
     Constructs a super trend strategy based on the desired candle length and multiplier
     """
-    def __init__(self, kite, mode):
+    def __init__(self, kite, mode, instruments_helper):
         self.kite = kite
         self.mode = mode
+        self.instruments_helper = instruments_helper
 
     def get_strategies(self, name):
         """
@@ -52,6 +52,7 @@ class SuperTrendStrategyFactory:
                 strategy_workers.append(StrategyRunner(self.kite,
                                                        SuperTrend73Strategy(self.kite, symbol,
                                                                             candle_interval=1,
+                                                                            instruments_helper=self.instruments_helper,
                                                                             mode=self.mode)))
 
         return strategy_workers

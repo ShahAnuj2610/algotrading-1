@@ -12,6 +12,10 @@ class StrategyRunner(WorkerThread):
         self.strategy = strategy
 
     def do_run(self, candle_time):
+        # Strategies can run only on pre-determined time slots based on the candle interval and period
+        if not candle_time.strftime('%H:%M') in self.strategy.allowed_time_slots:
+            return
+
         logging.debug(
             "Running strategy {} for symbol {}".format(self.strategy.__class__.__name__, self.strategy.symbol))
 

@@ -28,7 +28,7 @@ def get_time_sequence(period, candle_interval, candle_length, start_time):
         prev = prev.replace(second=0)
         prev = prev - delta
 
-        if prev.hour == 9 and prev.minute <= 15:
+        if prev.hour == 9 and prev.minute < 15:
             while True:
                 prev = prev - datetime.timedelta(days=max(1, (prev.weekday() + 6) % 7 - 3))
 
@@ -70,11 +70,11 @@ def get_previous_trading_day():
         # Hence we mimic by mutating the current time
         now = now.replace(hour=9)
         now = now.replace(minute=10)
-        prev_time = get_previous_time(Period.MIN, 1, now).date()
+        prev_time = get_previous_time(Period.MIN, 1, now)
     else:
         # All the exceptional scenarios are covered above. The remaining situations mean either the market is
         # active or the market has ended today. Hence the last trading day has to be today
-        prev_time = now.date()
+        prev_time = now
 
     return prev_time
 
@@ -87,7 +87,7 @@ def get_missing_time(actual_time_list, expected_time_list):
 
 def get_allowed_time_slots(period, candle_interval):
     """
-    Finds on what time slots can the indicator run. This depends on the candle interval
+    Finds on what time slots (minutes) can the indicator run. This depends on the candle interval
     For example, if its a 1 min candle, then it can run on 09:16, 09:17, ... , 14:20, 14:21, ... , 15:29, 15:30
     If its a 2 min candle, 09:17, 09:19, ... , 15:25, 15:27, 15:29
     If its a 15 min candle, 09:30, 09:45, ... , 15:00, 15:15, 15:30

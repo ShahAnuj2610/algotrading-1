@@ -1,13 +1,11 @@
 import logging
-import sqlite3
-import sys
 import time
-import traceback
 from abc import ABC, abstractmethod
 
-from trading.constants import EXCHANGE, TICKS_DB_PATH, BACK_TEST
+from trading.constants import EXCHANGE, BACK_TEST
 from trading.zerodha.kite.BackTestOrders import BackTestOrders
 from trading.zerodha.kite.Orders import Orders
+from trading.zerodha.kite.TimeSequencer import get_allowed_time_slots
 
 
 class Strategy(ABC):
@@ -37,8 +35,9 @@ class Strategy(ABC):
         # Can be used as a circuit breaker too
         self.net_income = 0.0
 
-        # Prepare the ticks database to receive ticks for this symbol
-        self.create_symbols_ticks_table()
+        # Allowed time slots at which the indicator can run
+        # This depends on the candle interval. i.e 1 min, 2 min, etc
+        self.allowed_time_slots = get_allowed_time_slots(self.get_period(), self.get_candle_interval())
 
     @abstractmethod
     def act(self, candle_time):
@@ -56,29 +55,15 @@ class Strategy(ABC):
     def get_candle_interval(self):
         return self.candle_interval
 
+    def get_kite_object(self):
+        return self.kite
+
     def get_mode(self):
         """
         Determines whether it is back test or not
         :return:
         """
         return self.mode
-
-    def create_symbols_ticks_table(self):
-        db = sqlite3.connect(TICKS_DB_PATH)
-
-        c = db.cursor()
-        table_name = self.symbol  # + "-" + str(self.suffix)
-        c.execute(
-            "CREATE TABLE IF NOT EXISTS {} (ts datetime primary key, price real(15,5), volume integer)".format(
-                table_name))
-        try:
-            db.commit()
-        except Exception as e:
-            print(e)
-            print(traceback.format_exc())
-            sys.exit(1)
-
-        db.close()
 
     def can_order(self, candle_time):
         current_hour = candle_time.hour

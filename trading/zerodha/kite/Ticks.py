@@ -1,4 +1,4 @@
-from trading.helpers.TicksDB import TicksDB
+from trading.data.live.TicksDataManager import TicksDataManager
 
 
 class Ticks:
@@ -7,7 +7,7 @@ class Ticks:
         self.instruments_helper = instruments_helper
 
     def on_ticks(self, ws, ticks):
-        ticks_db = TicksDB(self.instruments_helper)
+        ticks_db = TicksDataManager(instruments_helper=self.instruments_helper)
         ticks_db.insert_ticks(ticks)
         ticks_db.close()
 

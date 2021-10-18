@@ -16,10 +16,24 @@ class InstrumentsHelper:
             self.instruments_to_symbols[row['instrument_token']] = row['tradingsymbol']
 
     def get_instrument_token_from_symbol(self, symbol):
-        return self.symbols_to_instruments[symbol]
+        # This could be because the sample set might contain a stock that is not listed in the exchange
+        # the program assumes
+        # For now we focus only on one exchange
+        # TODO: Make this code exchange agnostic
+        if symbol in self.symbols_to_instruments:
+            return self.symbols_to_instruments[symbol]
+        else:
+            return None
 
     def get_symbol_from_instrument_token(self, token):
-        return self.instruments_to_symbols[token]
+        # This could be because the sample set might contain a stock that is not listed in the exchange
+        # the program assumes
+        # For now we focus only on one exchange
+        # TODO: Make this code exchange agnostic
+        if token in self.instruments_to_symbols:
+            return self.instruments_to_symbols[token]
+        else:
+            return None
 
     def get_instrument_tokens(self, symbols):
         tokens = []
