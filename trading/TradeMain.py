@@ -1,12 +1,13 @@
 import logging
 import sqlite3
 import sys
+import time
 import traceback
 from datetime import datetime
 
 from kiteconnect import KiteTicker
 
-from trading.constants import EXCHANGE, BACK_TEST, LIVE, TICKS_DB_PATH, PARABOLIC_SAR
+from trading.constants import EXCHANGE, BACK_TEST, LIVE, TICKS_DB_PATH, PARABOLIC_SAR, SUPER_TREND_STRATEGY_7_3
 from trading.data.DataManagerFactory import DataManagerFactory
 from trading.factory.StrategyFactory import StrategyFactory
 from trading.helpers.InstrumentsHelper import InstrumentsHelper
@@ -36,7 +37,7 @@ def start_threads_and_wait(threads):
     logging.info("Sleeping {} seconds to synchronize with minutes".format(60 - init_time.second))
 
     # Comment me for tests!
-    # time.sleep(60 - init_time.second)
+    time.sleep(60 - init_time.second)
 
     # Start all threads
     for t in threads:
@@ -95,8 +96,8 @@ def trade(kite):
     mode = BACK_TEST
     # mode = LIVE
 
-    threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(PARABOLIC_SAR))
-    # threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(SUPER_TREND_STRATEGY_7_3))
+    # threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(PARABOLIC_SAR))
+    threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(SUPER_TREND_STRATEGY_7_3))
     # threads.append(AutoSquareOffWorker(kite))
 
     # Collect all the symbols that our strategies want to act on
@@ -119,8 +120,8 @@ def trade(kite):
         initialize_symbols_for_back_test(
             strategies,
             instruments_helper,
-            datetime.today().replace(year=2021, month=10, day=18, hour=9, minute=15, second=0, microsecond=0),
-            datetime.today().replace(year=2021, month=10, day=18, hour=15, minute=30, second=0, microsecond=0)
+            datetime.today().replace(year=2021, month=10, day=19, hour=9, minute=15, second=0, microsecond=0),
+            datetime.today().replace(year=2021, month=10, day=19, hour=15, minute=30, second=0, microsecond=0)
         )
 
     start_threads_and_wait(threads)

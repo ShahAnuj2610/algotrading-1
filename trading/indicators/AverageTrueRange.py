@@ -43,6 +43,7 @@ class AverageTrueRange(Indicator):
         df.loc[tr_df.index[0], 'high'] = tr_df['high'][0]
         df.loc[tr_df.index[0], 'low'] = tr_df['low'][0]
         df.loc[tr_df.index[0], 'close'] = tr_df['close'][0]
+        df.loc[tr_df.index[0], 'volume'] = tr_df['volume'][0]
         df.loc[tr_df.index[0], self.indicator_name] = new_atr
         df.index.names = ['ts']
 

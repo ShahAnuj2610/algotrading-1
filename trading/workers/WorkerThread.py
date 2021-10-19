@@ -19,7 +19,7 @@ class WorkerThread(threading.Thread, ABC):
 
     def run(self):
         # Uncomment me for test!
-        candle_time = datetime.datetime(2021, 10, 18, 9, 15, 0)
+        candle_time = datetime.datetime(2021, 10, 19, 9, 15, 0)
 
         start_time = time.time()
 

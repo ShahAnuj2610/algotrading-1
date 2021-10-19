@@ -28,7 +28,7 @@ class SuperTrendStrategyFactory:
             cnx = create_engine(f"sqlite:///" + SCREENER_DB_PATH).connect()
             df = pd.read_sql_table("PreviousDayMaxMover", cnx)
             df = df[df['Symbol'].apply(lambda s: not s[0].isdigit())]
-            df = df[df['Close'] > 20]
+            df = df[df['close'] > 20]
             df = df.sort_values(by=['Move'], ascending=False)
             # Just pick the top 5 moving stocks
             # The direction is not mentioned. Hence we can go long or short
@@ -46,12 +46,13 @@ class SuperTrendStrategyFactory:
             symbols = ["TVSMOTOR"]
 
         strategy_workers = []
+        symbols = symbols[:1]
 
         for symbol in symbols:
             if name == SUPER_TREND_STRATEGY_7_3:
                 strategy_workers.append(StrategyRunner(self.kite,
                                                        SuperTrend73Strategy(self.kite, symbol,
-                                                                            candle_interval=1,
+                                                                            candle_interval=3,
                                                                             instruments_helper=self.instruments_helper,
                                                                             mode=self.mode)))
 

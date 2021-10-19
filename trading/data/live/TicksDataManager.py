@@ -15,13 +15,12 @@ class TicksDataManager:
         self.db = sqlite3.connect(TICKS_DB_PATH)
         self.instruments_helper = kwargs['instruments_helper']
 
-        self.period = kwargs['period']
-        self.candle_interval = kwargs['candle_interval']
+        if 'period' in kwargs and 'candle_interval' in kwargs:
+            self.period = kwargs['period']
+            self.candle_interval = kwargs['candle_interval']
 
-        if self.period == Period.MIN:
-            self.resample_time = str(self.candle_interval) + 'Min'
-
-        super().__init__()
+            if self.period == Period.MIN:
+                self.resample_time = str(self.candle_interval) + 'Min'
 
     def insert_ticks(self, ticks):
         c = self.db.cursor()
@@ -56,7 +55,7 @@ class TicksDataManager:
             return df
 
         ticks = df.loc[:, ['price']]
-        resampled_df = ticks['price'].resample(self.resample_time, base=1).ohlc()
+        resampled_df = ticks['price'].resample(self.resample_time).ohlc()
         resampled_df.index = pd.to_datetime(resampled_df.index)
         resampled_df = resampled_df.sort_index(ascending=True)
         # resampled_df.dropna(inplace=True)
