@@ -4,19 +4,26 @@ import traceback
 import pandas as pd
 from sqlalchemy import create_engine
 
-from trading.constants import SUPER_TREND_STRATEGY_7_3, SCREENER_DB_PATH
+from trading.constants import SUPER_TREND_STRATEGY_7_3, SCREENER_DB_PATH, BACK_TEST, SETUP, EXCHANGE, LIVE
 from trading.strategies.SuperTrend73Strategy import SuperTrend73Strategy
-from trading.workers.StrategyRunner import StrategyRunner
+from trading.workers.BackTestStrategyRunner import BackTestStrategyRunner
+from trading.workers.LiveStrategyRunner import LiveStrategyRunner
+from trading.zerodha.kite.BackTestOrders import BackTestOrders
+from trading.zerodha.kite.Orders import Orders
 
 
 class SuperTrendStrategyFactory:
     """
     Constructs a super trend strategy based on the desired candle length and multiplier
     """
-    def __init__(self, kite, mode, instruments_helper):
+
+    def __init__(self, kite, mode, **kwargs):
         self.kite = kite
         self.mode = mode
-        self.instruments_helper = instruments_helper
+        self.instruments_helper = kwargs['instruments_helper']
+        self.orders = kwargs['orders']
+        self.opening_time = kwargs['opening_time']
+        self.db_path = kwargs['db_path']
 
     def get_strategies(self, name):
         """
@@ -50,10 +57,18 @@ class SuperTrendStrategyFactory:
 
         for symbol in symbols:
             if name == SUPER_TREND_STRATEGY_7_3:
-                strategy_workers.append(StrategyRunner(self.kite,
-                                                       SuperTrend73Strategy(self.kite, symbol,
-                                                                            candle_interval=3,
-                                                                            instruments_helper=self.instruments_helper,
-                                                                            mode=self.mode)))
+                strategy_workers.append(self.get_strategy_runner(SuperTrend73Strategy(self.kite, symbol,
+                                                                                      orders=self.orders,
+                                                                                      db_path=self.db_path,
+                                                                                      candle_interval=3,
+                                                                                      instruments_helper=self.instruments_helper,
+                                                                                      opening_time=self.opening_time,
+                                                                                      mode=self.mode)))
 
         return strategy_workers
+
+    def get_strategy_runner(self, strategy):
+        if self.mode == BACK_TEST or self.mode == SETUP:
+            return BackTestStrategyRunner(self.kite, strategy)
+        else:
+            return LiveStrategyRunner(self.kite, strategy)

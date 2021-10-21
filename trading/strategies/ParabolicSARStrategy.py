@@ -10,6 +10,7 @@ class ParabolicSARStrategy(Strategy):
         self.candle_length = 2
         self.mode = kwargs['mode']
         self.candle_interval = kwargs['candle_interval']
+        self.db_path = kwargs['db_path']
         self.period = Period.MIN
 
         # This initialisation is necessary for the strategies to access the value

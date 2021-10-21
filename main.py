@@ -1,8 +1,12 @@
 import logging
 
+from trading.BackTestMain import back_test
 from trading.ScreenerMain import screen
+from trading.SetupMain import set_up
 from trading.TradeMain import trade
+from trading.constants import EXCHANGE
 from trading.helpers.AccessTokenHelper import AccessTokenHelper
+from trading.helpers.InstrumentsHelper import InstrumentsHelper
 from trading.zerodha.auth.Authorizer import Authorizer
 
 
@@ -17,6 +21,10 @@ if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s :: %(levelname)s :: %(message)s', level=logging.INFO)
 
     kite = authorize()
+    instruments_helper = InstrumentsHelper(kite, EXCHANGE)
+
     # screen(kite)
-    trade(kite)
+    # back_test(kite, instruments_helper)
+    set_up(kite, instruments_helper)
+    # trade(kite)
 

@@ -4,7 +4,6 @@ from abc import ABC, abstractmethod
 import pandas as pd
 from sqlalchemy import create_engine
 
-from trading.constants import TICKS_DB_PATH, STRATEGY_DB_PATH
 from trading.data.DataManagerFactory import DataManagerFactory
 from trading.errors.DataNotAvailableError import DataNotAvailableError
 from trading.zerodha.kite.TimeSequencer import get_previous_time, get_time_sequence
@@ -27,8 +26,7 @@ class Indicator(ABC):
         self.kite = strategy.get_kite_object()
         self.instruments_helper = kwargs['instruments_helper']
 
-        self.ticks_db_path = TICKS_DB_PATH
-        self.indicator_db_path = STRATEGY_DB_PATH + self.strategy.__class__.__name__ + "_" + str(self.candle_interval) \
+        self.indicator_db_path = strategy.get_db_path() + self.strategy.__class__.__name__ + "_" + str(self.candle_interval) \
                                  + "_" + str(self.period.name) + ".db"
         self.indicator_table_name = self.symbol + "_" + self.indicator_name
 

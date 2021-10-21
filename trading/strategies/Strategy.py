@@ -2,9 +2,6 @@ import logging
 import time
 from abc import ABC, abstractmethod
 
-from trading.constants import EXCHANGE, BACK_TEST
-from trading.zerodha.kite.BackTestOrders import BackTestOrders
-from trading.zerodha.kite.Orders import Orders
 from trading.zerodha.kite.TimeSequencer import get_allowed_time_slots
 
 
@@ -13,18 +10,11 @@ class Strategy(ABC):
         self.kite = kite
         self.indicators = indicators
 
-        self.exchange = EXCHANGE
         self.symbol = str(symbol)
 
-        self.leverage = 5
-        self.order_pct = 0.50
-
         self.mode = kwargs['mode']
-
-        if self.mode == BACK_TEST:
-            self.orders = BackTestOrders(self.kite, self.leverage, self.order_pct, self.exchange)
-        else:
-            self.orders = Orders(self.kite, self.leverage, self.order_pct, self.exchange)
+        self.orders = kwargs['orders']
+        self.opening_time = kwargs['opening_time']
 
         self.all_positions = []
         self.long_positions = []
@@ -57,6 +47,12 @@ class Strategy(ABC):
 
     def get_kite_object(self):
         return self.kite
+
+    def get_db_path(self):
+        return self.db_path
+
+    def get_opening_time(self):
+        return self.opening_time
 
     def get_mode(self):
         """

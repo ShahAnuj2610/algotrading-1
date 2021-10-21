@@ -16,6 +16,7 @@ class SuperTrend73Strategy(Strategy):
         self.candle_length = 7
         self.mode = kwargs['mode']
         self.candle_interval = kwargs['candle_interval']
+        self.db_path = kwargs['db_path']
         self.period = Period.MIN
         self.multiplier = 3
         # This initialisation is necessary for the strategies to access the value

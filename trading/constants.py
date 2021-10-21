@@ -10,5 +10,6 @@ PARABOLIC_SAR = "ParabolicSAR"
 
 # Mode constants
 BACK_TEST = "backtest"
+SETUP = "setup"
 SCREEN = "screen"
 LIVE = "live"

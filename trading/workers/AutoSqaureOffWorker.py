@@ -1,11 +1,11 @@
 import logging
 
-from trading.workers.WorkerThread import WorkerThread
+from trading.workers.LiveWorker import LiveWorker
 from trading.zerodha.kite.AutoSquareOff import AutoSquareOff
 from trading.zerodha.kite.Orders import Orders
 
 
-class AutoSquareOffWorker(WorkerThread):
+class AutoSquareOffWorker(LiveWorker):
     """
     Worker which automatically exits the positions when the cut off time is nearing.
     For equity class, the auto square off time imposed by Zerodha is 3.20PM after which a penalty is slapped

@@ -1,4 +1,4 @@
-from trading.constants import SCREEN, LIVE, BACK_TEST
+from trading.constants import SCREEN, LIVE, BACK_TEST, SETUP
 from trading.data.historical.KiteHistoricalDataManager import KiteHistoricalDataManager
 from trading.data.live.TicksDataManager import TicksDataManager
 
@@ -16,5 +16,7 @@ class DataManagerFactory:
     def get_object(self, **kwargs):
         if self.mode == LIVE:
             return TicksDataManager(**kwargs)
-        elif self.mode == BACK_TEST or self.mode == SCREEN:
+        elif self.mode == BACK_TEST or self.mode == SCREEN or self.mode == SETUP:
             return KiteHistoricalDataManager(self.kite, **kwargs)
+        else:
+            raise ValueError("Unknown mode {}".format(self.mode))
