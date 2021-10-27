@@ -20,16 +20,14 @@ class AdaptiveSAR(Indicator):
         atr_df = self.average_true_range.get_lines(1, candle_time)
 
         df = sar_df.append(atr_df)
-        ticks_df = self.get_data(candle_time)
-
         self.validate_candles_and_throw(df, reversed(self.get_n_candle_sequence(2, candle_time)))
 
         if df['color'][0] == "green":
-            self.calculate_sar_from_long_trade(df, ticks_df, candle_time)
+            self.calculate_sar_from_long_trade(df, candle_time)
         else:
-            self.calculate_sar_from_short_trade(df, ticks_df, candle_time)
+            self.calculate_sar_from_short_trade(df, candle_time)
 
-    def calculate_sar_from_short_trade(self, df_in, ticks_df, candle_time):
+    def calculate_sar_from_short_trade(self, df_in, candle_time):
         df = df_in.copy()
 
         ind = df.index
@@ -45,14 +43,18 @@ class AdaptiveSAR(Indicator):
                 df.loc[ind[i], 'color'] = "green"
                 break
 
-            df.loc[ind[i], 'SIC'] = min(ticks_df['close'])
+            # Find SIC
+            if df['close'][i] < df['SIC'][i - 1]:
+                df.loc[ind[i], 'SIC'] = df['close'][i]
+            else:
+                df.loc[ind[i], 'SIC'] = df['SIC'][i - 1]
 
             df.loc[ind[i], 'color'] = df['color'][i - 1]
             df.loc[ind[i], self.indicator_name] = df['SIC'][i] + (df[self.atr_name][i] * self.arc)
 
         self.store_indicator_value(df.tail(1), candle_time)
 
-    def calculate_sar_from_long_trade(self, df_in, ticks_df, candle_time):
+    def calculate_sar_from_long_trade(self, df_in, candle_time):
         df = df_in.copy()
 
         ind = df.index
@@ -68,7 +70,11 @@ class AdaptiveSAR(Indicator):
                 df.loc[ind[i], 'color'] = "red"
                 break
 
-            df.loc[ind[i], 'SIC'] = max(ticks_df['close'])
+            # Find SIC
+            if df['close'][i] > df['SIC'][i - 1]:
+                df.loc[ind[i], 'SIC'] = df['close'][i]
+            else:
+                df.loc[ind[i], 'SIC'] = df['SIC'][i - 1]
 
             df.loc[ind[i], 'color'] = df['color'][i - 1]
             df.loc[ind[i], self.indicator_name] = df['SIC'][i] - (df[self.atr_name][i] * self.arc)
