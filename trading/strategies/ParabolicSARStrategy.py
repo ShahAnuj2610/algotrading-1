@@ -43,6 +43,4 @@ class ParabolicSARStrategy(Strategy):
         elif (prev_color == "na" and new_color == "green") or (prev_color == "red" and new_color == "green"):
             self.enter_long_position(candle_time, curr_price, new_sar_value)
 
-    def get_parabolic_sar_indicator(self):
-        return self.parabolic_sar_indicator
 

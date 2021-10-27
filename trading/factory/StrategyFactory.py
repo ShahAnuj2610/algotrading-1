@@ -2,9 +2,10 @@ import datetime
 from abc import ABC
 
 from trading.constants import SUPER_TREND_STRATEGY_7_3, PARABOLIC_SAR, BACK_TEST, SETUP, STRATEGY_DB_PATH, LIVE, \
-    EXCHANGE
+    EXCHANGE, VOLATILITY_SYSTEM_STRATEGY
 from trading.factory.ParabolicSARStrategyFactory import ParabolicSARStrategyFactory
 from trading.factory.SuperTrendStrategyFactory import SuperTrendStrategyFactory
+from trading.factory.AdaptiveSARStrategyFactory import AdaptiveSARStrategyFactory
 from trading.zerodha.kite.BackTestOrders import BackTestOrders
 from trading.zerodha.kite.Orders import Orders
 from trading.zerodha.kite.TimeSequencer import get_previous_trading_day
@@ -25,7 +26,7 @@ class StrategyFactory(ABC):
 
             # Choose your own date for back testing in different time period
             # Right now we only allow back testing for intra day trading
-            opening_time = datetime.datetime(2021, 10, 19, 9, 15, 0)
+            opening_time = datetime.datetime(2021, 10, 27, 9, 15, 0)
         elif self.mode == SETUP:
             orders = BackTestOrders(self.kite, self.leverage, self.order_pct, EXCHANGE)
             db_path = STRATEGY_DB_PATH + LIVE.lower() + "/"
@@ -51,3 +52,10 @@ class StrategyFactory(ABC):
                                                orders=orders,
                                                db_path=db_path,
                                                opening_time=opening_time).get_strategies(name)
+
+        elif name == VOLATILITY_SYSTEM_STRATEGY:
+            return AdaptiveSARStrategyFactory(self.kite, self.mode,
+                                              instruments_helper=self.instruments_helper,
+                                              orders=orders,
+                                              db_path=db_path,
+                                              opening_time=opening_time).get_strategies(name)

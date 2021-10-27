@@ -7,6 +7,7 @@ STRATEGY_DB_PATH = STORE_PATH + "db/strategies/"
 EXCHANGE = "NSE"
 SUPER_TREND_STRATEGY_7_3 = "SuperTrendStrategy73"
 PARABOLIC_SAR = "ParabolicSAR"
+VOLATILITY_SYSTEM_STRATEGY = "AdaptiveSAR"
 
 # Mode constants
 BACK_TEST = "backtest"

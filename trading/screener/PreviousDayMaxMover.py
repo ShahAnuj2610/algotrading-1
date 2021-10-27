@@ -1,7 +1,10 @@
 import logging
+import traceback
 
 import pandas as pd
+from sqlalchemy import create_engine
 
+from trading.constants import SCREENER_DB_PATH
 from trading.screener.StockScreener import StockScreener
 from trading.zerodha.kite.TimeSequencer import get_previous_trading_day
 
@@ -45,4 +48,28 @@ class PreviousDayMaxMover(StockScreener):
         df = df.sort_values(by=['Move'], ascending=False)
         df = df.head(self.symbols_to_filter)
         return df
+
+    def get_results(self):
+        try:
+            cnx = create_engine(f"sqlite:///" + SCREENER_DB_PATH).connect()
+            df = pd.read_sql_table(self.__class__.__name__, cnx)
+            df = df[df['Symbol'].apply(lambda s: not s[0].isdigit())]
+            df = df[df['close'] > 20]
+            df = df.sort_values(by=['Move'], ascending=False)
+            # Just pick the top 5 moving stocks
+            # The direction is not mentioned. Hence we can go long or short
+            # It is up to the strategy
+            df = df.head(self.symbols_to_filter)
+            symbols = df['Symbol'].to_list()
+            if not symbols:
+                logging.error("There was an error fetching symbols list from the screener database")
+                symbols = ["TVSMOTOR"]
+        except Exception as e:
+            # If there is any exception thrown, we will stick to some default stock so that the strategy is running
+            logging.error("There was an error fetching symbols list from the screener database")
+            print(e)
+            print(traceback.format_exc())
+            symbols = ["TVSMOTOR"]
+
+        return symbols
 

@@ -23,8 +23,9 @@ if __name__ == '__main__':
     kite = authorize()
     instruments_helper = InstrumentsHelper(kite, EXCHANGE)
 
+    back_test(kite, instruments_helper)
+
     # screen(kite)
-    # back_test(kite, instruments_helper)
-    set_up(kite, instruments_helper)
+    # set_up(kite, instruments_helper)
     # trade(kite)
 

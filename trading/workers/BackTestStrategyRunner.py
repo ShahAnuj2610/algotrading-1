@@ -16,12 +16,12 @@ class BackTestStrategyRunner(BackTestWorker):
         if not candle_time.strftime('%H:%M') in self.strategy.allowed_time_slots:
             return
 
-        logging.info(
+        logging.debug(
             "Running strategy {} for symbol {}".format(self.strategy.__class__.__name__, self.strategy.symbol))
 
         try:
             for ind in self.strategy.get_indicators():
-                logging.info(
+                logging.debug(
                     "Running indicator {} for symbol {}".format(ind.__class__.__name__, self.strategy.symbol))
                 ind.calculate_lines(candle_time)
 
