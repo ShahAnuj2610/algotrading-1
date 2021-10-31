@@ -1,4 +1,4 @@
-from trading.constants import BACK_TEST, EXCHANGE, PARABOLIC_SAR, VOLATILITY_SYSTEM_STRATEGY
+from trading.constants import BACK_TEST, EXCHANGE, PARABOLIC_SAR, ADAPTIVE_SAR_STRATEGY, ADX_STRATEGY
 from trading.data.DataManagerFactory import DataManagerFactory
 from trading.factory.StrategyFactory import StrategyFactory
 from trading.helpers.InstrumentsHelper import InstrumentsHelper
@@ -39,7 +39,7 @@ def back_test(kite, instruments_helper):
 
     # threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(PARABOLIC_SAR))
     # threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(SUPER_TREND_STRATEGY_7_3))
-    threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(VOLATILITY_SYSTEM_STRATEGY))
+    threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(ADX_STRATEGY))
 
     # Get all strategies
     strategies = []
