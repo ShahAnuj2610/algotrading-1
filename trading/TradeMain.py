@@ -7,7 +7,7 @@ from datetime import datetime
 
 from kiteconnect import KiteTicker
 
-from trading.constants import EXCHANGE, LIVE, TICKS_DB_PATH, PARABOLIC_SAR, SUPER_TREND_STRATEGY_7_3
+from trading.constants import EXCHANGE, LIVE, TICKS_DB_PATH, PARABOLIC_SAR, SUPER_TREND_STRATEGY_7_3, PARABOLIC_SAR_MTF
 from trading.factory.StrategyFactory import StrategyFactory
 from trading.helpers.InstrumentsHelper import InstrumentsHelper
 from trading.workers.AutoSqaureOffWorker import AutoSquareOffWorker
@@ -78,8 +78,9 @@ def trade(kite):
     threads = []
     mode = LIVE
 
-    threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(PARABOLIC_SAR))
-    threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(SUPER_TREND_STRATEGY_7_3))
+    # threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(PARABOLIC_SAR))
+    # threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(SUPER_TREND_STRATEGY_7_3))
+    threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(PARABOLIC_SAR_MTF))
     threads.append(AutoSquareOffWorker(kite))
 
     # Collect all the symbols that our strategies want to act on

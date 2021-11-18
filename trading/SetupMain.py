@@ -1,4 +1,4 @@
-from trading.constants import BACK_TEST, EXCHANGE, PARABOLIC_SAR, SETUP, ADAPTIVE_SAR_STRATEGY
+from trading.constants import BACK_TEST, EXCHANGE, PARABOLIC_SAR, SETUP, ADAPTIVE_SAR_STRATEGY, PARABOLIC_SAR_MTF
 from trading.data.DataManagerFactory import DataManagerFactory
 from trading.factory.StrategyFactory import StrategyFactory
 from trading.helpers.InstrumentsHelper import InstrumentsHelper
@@ -6,13 +6,19 @@ from trading.helpers.InstrumentsHelper import InstrumentsHelper
 
 def initialize_symbols_for_back_test(strategies, instruments_helper):
     for strategy in strategies:
-        initialize_symbol_for_back_test(strategy, instruments_helper)
+        candle_intervals = set()
+
+        for ind in strategy.get_indicators():
+            candle_intervals.add(ind.get_candle_interval())
+
+        for candle_interval in candle_intervals:
+            initialize_symbol_for_back_test(strategy, candle_interval, instruments_helper)
 
 
-def initialize_symbol_for_back_test(strategy, instruments_helper):
+def initialize_symbol_for_back_test(strategy, candle_interval, instruments_helper):
     data_manager = DataManagerFactory(strategy.get_kite_object(), strategy.get_mode()).get_object(
         period=strategy.get_period(),
-        candle_interval=strategy.get_candle_interval(),
+        candle_interval=candle_interval,
         instruments_helper=instruments_helper
     )
 
@@ -39,7 +45,8 @@ def set_up(kite, instruments_helper):
 
     # threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(PARABOLIC_SAR))
     # threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(SUPER_TREND_STRATEGY_7_3))
-    threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(ADAPTIVE_SAR_STRATEGY))
+    # threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(ADAPTIVE_SAR_STRATEGY))
+    threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(PARABOLIC_SAR_MTF))
 
     # Get all strategies
     strategies = []

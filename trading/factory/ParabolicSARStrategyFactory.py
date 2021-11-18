@@ -17,6 +17,7 @@ class ParabolicSARStrategyFactory:
         self.orders = kwargs['orders']
         self.opening_time = kwargs['opening_time']
         self.db_path = kwargs['db_path']
+        self.candle_interval = kwargs['candle_interval']
 
     def get_strategies(self, name):
         """
@@ -28,14 +29,13 @@ class ParabolicSARStrategyFactory:
         strategy_workers = []
 
         for symbol in symbols:
-            if name == PARABOLIC_SAR:
-                strategy_workers.append(self.get_strategy_runner(ParabolicSARStrategy(self.kite, symbol,
-                                                                                      orders=self.orders,
-                                                                                      db_path=self.db_path,
-                                                                                      candle_interval=3,
-                                                                                      instruments_helper=self.instruments_helper,
-                                                                                      opening_time=self.opening_time,
-                                                                                      mode=self.mode)))
+            strategy_workers.append(self.get_strategy_runner(ParabolicSARStrategy(self.kite, symbol,
+                                                                                  orders=self.orders,
+                                                                                  db_path=self.db_path,
+                                                                                  candle_interval=self.candle_interval,
+                                                                                  instruments_helper=self.instruments_helper,
+                                                                                  opening_time=self.opening_time,
+                                                                                  mode=self.mode)))
 
         return strategy_workers
 

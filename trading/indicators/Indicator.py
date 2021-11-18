@@ -6,7 +6,7 @@ from sqlalchemy import create_engine
 
 from trading.data.DataManagerFactory import DataManagerFactory
 from trading.errors.DataNotAvailableError import DataNotAvailableError
-from trading.zerodha.kite.TimeSequencer import get_previous_time, get_time_sequence
+from trading.zerodha.kite.TimeSequencer import get_previous_time, get_time_sequence, get_allowed_time_slots
 
 
 class Indicator(ABC):
@@ -20,7 +20,7 @@ class Indicator(ABC):
         self.symbol = strategy.get_symbol()
         self.period = strategy.get_period()
         self.candle_length = strategy.get_candle_length()
-        self.candle_interval = strategy.get_candle_interval()
+        self.candle_interval = kwargs['candle_interval']
 
         self.mode = strategy.get_mode()
         self.kite = strategy.get_kite_object()
@@ -33,7 +33,15 @@ class Indicator(ABC):
         # Historical dataframe
         self.values = self.load_indicator_values()
 
+        # Allowed time slots at which the indicator can run
+        # This depends on the candle interval. i.e 1 min, 2 min, etc
+        self.allowed_time_slots = get_allowed_time_slots(self.period, self.candle_interval)
+
     def calculate_lines(self, candle_time):
+        # Indicators can run only on pre-determined time slots based on the candle interval and period
+        if not candle_time.strftime('%H:%M') in self.allowed_time_slots:
+            return
+
         self.do_calculate_lines(candle_time)
 
     @abstractmethod
@@ -44,9 +52,31 @@ class Indicator(ABC):
         return get_previous_time(self.period, self.candle_interval, candle_time)
 
     def get_lines(self, n, candle_time):
+        """
+        Gets the most recent indicator value in accordance with the candle time
+        This method also validates if the candle time aligns with the most recently available value
+        For example, for an 3 min candle, when candle time is 9:20, the most recent indicator value
+        should be recorded at 9:17. If the most recent value has any other time, then the validation fails
+        with a retryable error. The error is retryable because in genuine cases, one indicator can wait
+        for other indicator to fill up
+        :param n: How many previous indicator values
+        :param candle_time: Current candle time
+        :return:
+        """
         candle_sequence = self.get_n_candle_sequence(n, candle_time)
         df = self.values.tail(n)
         self.validate_candles(df, reversed(candle_sequence))
+        return df.copy()
+
+    def get_lines_unsafe(self, n):
+        """
+        This method should be used when we simply want an indicators previous value
+        This is most useful for multi time frame analysis where the previous indicator time
+        is not expected to align with the candle_time
+        :param n: How many previous indicator values
+        :return:
+        """
+        df = self.values.tail(n)
         return df.copy()
 
     def store_indicator_value(self, df, candle_time):
@@ -107,7 +137,7 @@ class Indicator(ABC):
         """
         engine = create_engine(f"sqlite:///" + self.indicator_db_path)
         # For now pick the last 50 entries
-        df = self.values.tail(50)
+        df = self.values.tail(375)
         df.index = df.index.strftime('%Y-%m-%d %H:%M:%S')
         df.to_sql(self.indicator_table_name, engine, if_exists='replace', index=True)
         engine.dispose()
@@ -172,3 +202,6 @@ class Indicator(ABC):
             logging.info("Actual candles: {} for indicator: {}".format(str(actual_candles), self.indicator_name))
 
             raise ValueError("Candles mismatch")
+
+    def get_candle_interval(self):
+        return self.candle_interval

@@ -12,18 +12,17 @@ class BackTestStrategyRunner(BackTestWorker):
         self.strategy = strategy
 
     def do_run(self, candle_time):
-        # Strategies can run only on pre-determined time slots based on the candle interval and period
-        if not candle_time.strftime('%H:%M') in self.strategy.allowed_time_slots:
-            return
-
         logging.debug(
             "Running strategy {} for symbol {}".format(self.strategy.__class__.__name__, self.strategy.symbol))
 
         try:
             for ind in self.strategy.get_indicators():
-                logging.debug(
-                    "Running indicator {} for symbol {}".format(ind.__class__.__name__, self.strategy.symbol))
-                ind.calculate_lines(candle_time)
+                try:
+                    logging.debug(
+                        "Running indicator {} for symbol {}".format(ind.__class__.__name__, self.strategy.symbol))
+                    ind.calculate_lines(candle_time)
+                except DataNotAvailableError:
+                    pass
 
             self.strategy.act(candle_time)
         except (DataNotAvailableError, NoCashError):

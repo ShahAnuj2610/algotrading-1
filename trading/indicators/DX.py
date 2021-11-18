@@ -25,9 +25,9 @@ class DX(Indicator):
         for i in range(1, len(df)):
             df.loc[ind[i], 'TR_14'] = (df['TR_14'][i - 1] - (df['TR_14'][i - 1] / self.candle_length)) + df['TR_14'][i]
             df.loc[ind[i], 'PLUSDM_14'] = (df['PLUSDM_14'][i - 1] - (df['PLUSDM_14'][i - 1] / self.candle_length)) + \
-                                      df['PLUSDM_14'][i]
+                                      df['PLUSDM_1'][i]
             df.loc[ind[i], 'MINUSDM_14'] = (df['MINUSDM_14'][i - 1] - (df['MINUSDM_14'][i - 1] / self.candle_length)) + \
-                                       df['MINUSDM_14'][i]
+                                       df['MINUSDM_1'][i]
             df.loc[ind[i], 'PLUSDI_14'] = round((df['PLUSDM_14'][i] / df['TR_14'][i]) * 100)
             df.loc[ind[i], 'MINUSDI_14'] = round((df['MINUSDM_14'][i] / df['TR_14'][i]) * 100)
             df.loc[ind[i], 'DI_DIFF'] = abs(df['PLUSDI_14'][i] - df['MINUSDI_14'][i])

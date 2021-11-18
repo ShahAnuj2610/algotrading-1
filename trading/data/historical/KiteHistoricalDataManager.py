@@ -4,7 +4,7 @@ import sqlite3
 import pandas as pd
 from sqlalchemy import create_engine
 
-from trading.constants import BACK_TEST_OHLC_DB_PATH
+from trading.constants import BACK_TEST_OHLC_DB_PATH, CSV_PATH
 from trading.zerodha.kite.Period import Period
 from trading.zerodha.kite.Retry import retry
 
@@ -58,6 +58,12 @@ class KiteHistoricalDataManager:
         engine = create_engine(f"sqlite:///" + BACK_TEST_OHLC_DB_PATH)
         df.to_sql(symbol + self.table_name_suffix, engine, if_exists='replace')
         engine.dispose()
+
+    @retry(tries=5, delay=2, backoff=2)
+    def put_data_to_csv(self, symbol, start, end):
+        df = self.get_data_from_kite(symbol, start, end)
+        file_name = CSV_PATH + symbol + "_" + str(start.date()) + "_ohlc.csv"
+        df.to_csv(file_name)
 
     @retry(tries=5, delay=2, backoff=2)
     def get_data(self, symbol, start, end):

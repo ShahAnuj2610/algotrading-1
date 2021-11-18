@@ -25,10 +25,6 @@ class Strategy(ABC):
         # Can be used as a circuit breaker too
         self.net_income = 0.0
 
-        # Allowed time slots at which the indicator can run
-        # This depends on the candle interval. i.e 1 min, 2 min, etc
-        self.allowed_time_slots = get_allowed_time_slots(self.get_period(), self.get_candle_interval())
-
     @abstractmethod
     def act(self, candle_time):
         pass
@@ -42,8 +38,8 @@ class Strategy(ABC):
     def get_candle_length(self):
         return self.candle_length
 
-    def get_candle_interval(self):
-        return self.candle_interval
+    def get_indicators(self):
+        return self.indicators
 
     def get_kite_object(self):
         return self.kite
@@ -88,18 +84,7 @@ class Strategy(ABC):
             )
 
         if len(self.short_positions) == 1:
-            logging.info("Exiting short position for symbol {} at {}".format(self.symbol, candle_time))
-
-            short_position = self.short_positions[0]
-            quantity = short_position['quantity']
-
-            self.orders.buy_intraday_regular_market_order_with_quantity(self.symbol, quantity)
-            # stoploss_order_id = short_position['stoploss_order_id']
-            # self.orders.cancel_regular_order(stoploss_order_id)
-            self.short_positions.clear()
-
-            # Pausing for margins to get reflected
-            time.sleep(5)
+            self.exit_short_position(candle_time)
 
         logging.info("Entering new long position for symbol {} at {}".format(self.symbol, candle_time))
 
@@ -127,18 +112,7 @@ class Strategy(ABC):
             )
 
         if len(self.long_positions) == 1:
-            logging.info("Exiting long position for symbol {} at {}".format(self.symbol, candle_time))
-
-            long_position = self.long_positions[0]
-            quantity = long_position['quantity']
-
-            self.orders.sell_intraday_regular_market_order_with_quantity(self.symbol, quantity)
-            # stoploss_order_id = long_position['stoploss_order_id']
-            # self.orders.cancel_regular_order(stoploss_order_id)
-            self.long_positions.clear()
-
-            # Pausing for margins to get reflected
-            time.sleep(5)
+            self.exit_long_position(candle_time)
 
         logging.info("Entering new short position for symbol {} at {}".format(self.symbol, candle_time))
 
@@ -151,5 +125,40 @@ class Strategy(ABC):
             "candle_time": candle_time
         })
 
-    def get_indicators(self):
-        return self.indicators
+    def exit_long_position(self, candle_time):
+        if len(self.long_positions) == 0:
+            logging.warning("There are no long positions to exit")
+            return
+
+        logging.info("Exiting long position for symbol {} at {}".format(self.symbol, candle_time))
+
+        long_position = self.long_positions[0]
+        quantity = long_position['quantity']
+
+        self.orders.sell_intraday_regular_market_order_with_quantity(self.symbol, quantity)
+        # stoploss_order_id = long_position['stoploss_order_id']
+        # self.orders.cancel_regular_order(stoploss_order_id)
+        self.long_positions.clear()
+
+        # Pausing for margins to get reflected
+        time.sleep(5)
+
+    def exit_short_position(self, candle_time):
+        if len(self.short_positions) == 0:
+            logging.warning("There are no short positions to exit")
+            return
+
+        logging.info("Exiting short position for symbol {} at {}".format(self.symbol, candle_time))
+
+        short_position = self.short_positions[0]
+        quantity = short_position['quantity']
+
+        self.orders.buy_intraday_regular_market_order_with_quantity(self.symbol, quantity)
+        # stoploss_order_id = short_position['stoploss_order_id']
+        # self.orders.cancel_regular_order(stoploss_order_id)
+        self.short_positions.clear()
+
+        # Pausing for margins to get reflected
+        time.sleep(5)
+
+
