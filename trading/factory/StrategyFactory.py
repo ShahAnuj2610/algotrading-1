@@ -2,10 +2,11 @@ import datetime
 from abc import ABC
 
 from trading.constants import SUPER_TREND_STRATEGY_7_3, PARABOLIC_SAR, BACK_TEST, SETUP, STRATEGY_DB_PATH, LIVE, \
-    EXCHANGE, ADAPTIVE_SAR_STRATEGY, ADX_STRATEGY, PARABOLIC_SAR_MTF
+    EXCHANGE, ADAPTIVE_SAR_STRATEGY, ADX_STRATEGY, PARABOLIC_SAR_MTF, SPM_STRATEGY
 from trading.factory.ADXStrategyFactory import ADXStrategyFactory
 from trading.factory.ParabolicSARMTFStrategyFactory import ParabolicSARMTFStrategyFactory
 from trading.factory.ParabolicSARStrategyFactory import ParabolicSARStrategyFactory
+from trading.factory.StructuralPivotMethodStrategyFactory import StructuralPivotMethodStrategyFactory
 from trading.factory.SuperTrendStrategyFactory import SuperTrendStrategyFactory
 from trading.factory.AdaptiveSARStrategyFactory import AdaptiveSARStrategyFactory
 from trading.zerodha.kite.BackTestOrders import BackTestOrders
@@ -28,7 +29,7 @@ class StrategyFactory(ABC):
 
             # Choose your own date for back testing in different time period
             # Right now we only allow back testing for intra day trading
-            opening_time = datetime.datetime(2021, 11, 9, 9, 15, 0)
+            opening_time = datetime.datetime(2021, 11, 24, 9, 15, 0)
         elif self.mode == SETUP:
             orders = BackTestOrders(self.kite, self.leverage, self.order_pct, EXCHANGE)
             db_path = STRATEGY_DB_PATH + LIVE.lower() + "/"
@@ -79,3 +80,11 @@ class StrategyFactory(ABC):
                                       orders=orders,
                                       db_path=db_path,
                                       opening_time=opening_time).get_strategies(name)
+
+        elif name == SPM_STRATEGY:
+            return StructuralPivotMethodStrategyFactory(self.kite, self.mode,
+                                                        instruments_helper=self.instruments_helper,
+                                                        orders=orders,
+                                                        db_path=db_path,
+                                                        candle_interval=5,
+                                                        opening_time=opening_time).get_strategies(name)

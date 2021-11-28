@@ -79,6 +79,15 @@ class Indicator(ABC):
         df = self.values.tail(n)
         return df.copy()
 
+    def get_all_values(self):
+        """
+        This method should be used when we simply want all of indicator values
+        :param n: How many previous indicator values
+        :return:
+        """
+        df = self.values
+        return df.copy()
+
     def store_indicator_value(self, df, candle_time):
         self.validate_candles_and_throw(df, [self.get_previous_indicator_time(candle_time)])
         self.values = self.values.append(df)

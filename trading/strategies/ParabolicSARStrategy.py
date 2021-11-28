@@ -39,8 +39,8 @@ class ParabolicSARStrategy(Strategy):
         curr_price = parabolic_sar['close'][1]
 
         if (prev_color == "na" and new_color == "red") or (prev_color == "green" and new_color == "red"):
-            self.enter_short_position(candle_time, curr_price, new_sar_value)
+            self.stop_and_reverse_enter_short_position(candle_time, curr_price)
         elif (prev_color == "na" and new_color == "green") or (prev_color == "red" and new_color == "green"):
-            self.enter_long_position(candle_time, curr_price, new_sar_value)
+            self.stop_and_reverse_enter_long_position(candle_time, curr_price)
 
 

@@ -1,6 +1,7 @@
 import logging
 
 from trading.BackTestMain import back_test
+from trading.HistoricalDataMain import historical_data
 from trading.ScreenerMain import screen
 from trading.SetupMain import set_up
 from trading.TradeMain import trade
@@ -24,6 +25,7 @@ if __name__ == '__main__':
     instruments_helper = InstrumentsHelper(kite, EXCHANGE)
 
     back_test(kite, instruments_helper)
+    # historical_data(kite, instruments_helper)
 
     # screen(kite)
     # set_up(kite, instruments_helper)

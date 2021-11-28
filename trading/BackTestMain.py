@@ -1,4 +1,4 @@
-from trading.constants import BACK_TEST, PARABOLIC_SAR_MTF
+from trading.constants import BACK_TEST, PARABOLIC_SAR_MTF, SPM_STRATEGY
 from trading.data.DataManagerFactory import DataManagerFactory
 from trading.factory.StrategyFactory import StrategyFactory
 
@@ -24,8 +24,8 @@ def initialize_symbol_for_back_test(strategy, candle_interval, instruments_helpe
     opening_time = strategy.get_opening_time()
     start_time = opening_time.replace(hour=9, minute=15, second=0, microsecond=0)
     end_time = opening_time.replace(hour=15, minute=30, second=0, microsecond=0)
-    # data_manager.put_data(strategy.get_symbol(), start_time, end_time)
-    data_manager.put_data_to_csv(strategy.get_symbol(), start_time, end_time)
+    data_manager.put_data(strategy.get_symbol(), start_time, end_time)
+    # data_manager.put_data_to_csv(strategy.get_symbol(), start_time, end_time)
     data_manager.close()
 
 
@@ -46,7 +46,8 @@ def back_test(kite, instruments_helper):
     # threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(PARABOLIC_SAR))
     # threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(SUPER_TREND_STRATEGY_7_3))
     # threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(ADX_STRATEGY))
-    threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(PARABOLIC_SAR_MTF))
+    # threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(PARABOLIC_SAR_MTF))
+    threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(SPM_STRATEGY))
 
     # Get all strategies
     strategies = []
@@ -55,4 +56,4 @@ def back_test(kite, instruments_helper):
 
     initialize_symbols_for_back_test(strategies, instruments_helper)
 
-    # start_threads_and_wait(threads)
+    start_threads_and_wait(threads)

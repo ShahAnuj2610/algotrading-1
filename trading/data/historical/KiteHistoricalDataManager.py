@@ -47,6 +47,9 @@ class KiteHistoricalDataManager:
         df = pd.DataFrame(
             self.kite.historical_data(instrument, start, end, self.interval))
 
+        if df.empty:
+            return pd.DataFrame()
+
         df['date'] = df['date'].dt.tz_localize(None)
         df = df.rename(columns={'date': 'ts'})
         df = df.set_index('ts')
@@ -60,9 +63,12 @@ class KiteHistoricalDataManager:
         engine.dispose()
 
     @retry(tries=5, delay=2, backoff=2)
-    def put_data_to_csv(self, symbol, start, end):
+    def put_data_to_csv(self, file_name, symbol, start, end):
         df = self.get_data_from_kite(symbol, start, end)
-        file_name = CSV_PATH + symbol + "_" + str(start.date()) + "_ohlc.csv"
+
+        if df.empty:
+            return
+
         df.to_csv(file_name)
 
     @retry(tries=5, delay=2, backoff=2)

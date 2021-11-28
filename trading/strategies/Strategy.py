@@ -69,7 +69,17 @@ class Strategy(ABC):
 
         return True
 
-    def enter_long_position(self, candle_time, price, stoploss_price):
+    def stop_and_reverse_enter_long_position(self, candle_time, price):
+        """
+        Enter a new long position by exiting the previous short position
+        This method has to be used only when we want 1 open position for the liftime of a strategy
+        If we want multiple open long positions, then call enter_long_position method directly
+
+        :param candle_time: Time at which we enter a new position
+        :param price: Price at which we enter a new position
+        :return: None. But adds the new short position to the list of open short positions whose length should be ideally 1
+        """
+
         if not self.can_order(candle_time):
             return
 
@@ -86,18 +96,19 @@ class Strategy(ABC):
         if len(self.short_positions) == 1:
             self.exit_short_position(candle_time)
 
-        logging.info("Entering new long position for symbol {} at {}".format(self.symbol, candle_time))
+        self.long_positions.append(self.enter_long_position(price, candle_time))
 
-        order_id, quantity = \
-            self.orders.buy_intraday_regular_market_order(self.symbol, price)
+    def stop_and_reverse_enter_short_position(self, candle_time, price):
+        """
+        Enter a new short position by exiting the previous long position
+        This method has to be used only when we want 1 open position at the liftime of
+        a strategy
+        If we want multiple open short positions, then call enter_short_position method directly
 
-        self.long_positions.append({
-            "quantity": quantity,
-            "order_id": order_id,
-            "candle_time": candle_time
-        })
-
-    def enter_short_position(self, candle_time, price, stoploss_price):
+        :param candle_time: Time at which we enter a new position
+        :param price: Price at which we enter a new position
+        :return: None. But adds the new short position to the list of open short positions whose length should be ideally 1
+        """
         if not self.can_order(candle_time):
             return
 
@@ -114,16 +125,53 @@ class Strategy(ABC):
         if len(self.long_positions) == 1:
             self.exit_long_position(candle_time)
 
+        self.short_positions.append(self.enter_short_position(price, candle_time))
+
+    def enter_long_position(self, price, candle_time, stoploss_price=0):
+        """
+        Enter a new long position
+        This method should be called only when we want multiple open positions to coexist
+
+        :param price: Price at which we enter the new position
+        :param candle_time: Candle time at which we enter the new position
+        :param stoploss_price: Price at which the position should be exited
+        :return: Position details as dictionary
+        """
+        logging.info("Entering new long position for symbol {} at {}".format(self.symbol, candle_time))
+
+        order_id, quantity = \
+            self.orders.buy_intraday_regular_market_order(self.symbol, price)
+
+        return {
+            "quantity": quantity,
+            "entry_price": price,
+            "order_id": order_id,
+            "stoploss_price": stoploss_price,
+            "candle_time": candle_time
+        }
+
+    def enter_short_position(self, price, candle_time, stoploss_price=0):
+        """
+        Enter a new short position
+        This method should be called only when we want multiple open positions to coexist
+
+        :param price: Price at which we enter the new position
+        :param candle_time: Candle time at which we enter the new position
+        :param stoploss_price: Price at which the position should be exited
+        :return: Position details as dictionary
+        """
         logging.info("Entering new short position for symbol {} at {}".format(self.symbol, candle_time))
 
         order_id, quantity = \
             self.orders.sell_intraday_regular_market_order(self.symbol, price)
 
-        self.short_positions.append({
+        return {
             "quantity": quantity,
+            "entry_price": price,
             "order_id": order_id,
+            "stoploss_price": stoploss_price,
             "candle_time": candle_time
-        })
+        }
 
     def exit_long_position(self, candle_time):
         if len(self.long_positions) == 0:

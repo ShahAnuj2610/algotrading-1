@@ -48,14 +48,14 @@ class ParabolicSARMTFStrategy(Strategy):
                 # We are already in the right direction
                 return
 
-            self.enter_short_position(candle_time, curr_price, stop_loss)
+            self.stop_and_reverse_enter_short_position(candle_time, curr_price)
             return
         elif self.trend_changed_to_green(parabolic_sar_ht):
             if len(self.long_positions) == 1:
                 # We are already in the right direction
                 return
 
-            self.enter_long_position(candle_time, curr_price, stop_loss)
+            self.stop_and_reverse_enter_long_position(candle_time, curr_price)
             return
 
         major_trend_color = self.get_major_trend_color(parabolic_sar_ht)
@@ -70,9 +70,9 @@ class ParabolicSARMTFStrategy(Strategy):
         # The effect will be felt more in higher time frames like 3-15, 5-30 etc
         if self.trend_changed_to_red(parabolic_sar_lt)\
                 and major_trend_color == "red" and len(self.short_positions) == 0:
-            self.enter_short_position(candle_time, curr_price, stop_loss)
+            self.stop_and_reverse_enter_short_position(candle_time, curr_price)
         elif self.trend_changed_to_green(parabolic_sar_lt) and major_trend_color == "green" and len(self.long_positions) == 0:
-            self.enter_long_position(candle_time, curr_price, stop_loss)
+            self.stop_and_reverse_enter_long_position(candle_time, curr_price)
 
     def trend_changed_to_red(self, df):
         if len(df) != 2:

@@ -11,6 +11,7 @@ PARABOLIC_SAR = "ParabolicSAR"
 PARABOLIC_SAR_MTF = "ParabolicSARMultiTimeFrame"
 ADAPTIVE_SAR_STRATEGY = "AdaptiveSAR"
 ADX_STRATEGY = "ADXStrategy"
+SPM_STRATEGY = "SPMStrategy"
 
 # Mode constants
 BACK_TEST = "backtest"
