@@ -58,9 +58,16 @@ class KiteHistoricalDataManager:
     @retry(tries=5, delay=2, backoff=2)
     def put_data(self, symbol, start, end):
         df = self.get_data_from_kite(symbol, start, end)
+
+        if df.empty:
+            # This could be a non trading day
+            return False
+
         engine = create_engine(f"sqlite:///" + BACK_TEST_OHLC_DB_PATH)
         df.to_sql(symbol + self.table_name_suffix, engine, if_exists='replace')
         engine.dispose()
+
+        return True
 
     @retry(tries=5, delay=2, backoff=2)
     def put_data_to_csv(self, file_name, symbol, start, end):

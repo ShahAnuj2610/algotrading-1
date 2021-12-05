@@ -55,7 +55,7 @@ def initialize_symbol_for_live_trade(symbol):
     c = db.cursor()
     table_name = symbol  # + "-" + str(self.suffix)
     c.execute(
-        "CREATE TABLE IF NOT EXISTS {} (ts datetime primary key, price real(15,5), volume integer)".format(
+        "CREATE TABLE IF NOT EXISTS {} (ts datetime primary key, current_price real(15,5), volume integer)".format(
             table_name))
     try:
         db.commit()
@@ -80,7 +80,7 @@ def trade(kite):
 
     # threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(PARABOLIC_SAR))
     # threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(SUPER_TREND_STRATEGY_7_3))
-    threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(PARABOLIC_SAR_MTF))
+    threads.extend(StrategyFactory(kite, mode, orders, instruments_helper).get_strategies(PARABOLIC_SAR_MTF))
     threads.append(AutoSquareOffWorker(kite))
 
     # Collect all the symbols that our strategies want to act on

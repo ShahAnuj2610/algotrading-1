@@ -32,13 +32,13 @@ class ParabolicSARMTFStrategy(Strategy):
                          ],
                          **kwargs)
 
-    def act(self, candle_time):
+    def do_act(self, candle_time):
         parabolic_sar_lt = self.parabolic_sar_indicator_lt.get_lines(2, candle_time)
         parabolic_sar_ht = self.parabolic_sar_indicator_ht.get_lines_unsafe(2)
 
         curr_price = parabolic_sar_lt['close'][1]
 
-        # For now ignoring stop loss because parabolic SAW already trails the price
+        # For now ignoring stop loss because parabolic SAW already trails the current_price
         stop_loss = 0
 
         # Major trend takes precedence
@@ -66,7 +66,7 @@ class ParabolicSARMTFStrategy(Strategy):
 
         # Major trend has not shown any movement
         # We will now look at the minor trend
-        # We use minor trend only to take early positions. Otherwise major trend has the say
+        # We use minor trend only to take early all_positions. Otherwise major trend has the say
         # The effect will be felt more in higher time frames like 3-15, 5-30 etc
         if self.trend_changed_to_red(parabolic_sar_lt)\
                 and major_trend_color == "red" and len(self.short_positions) == 0:

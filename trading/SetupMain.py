@@ -46,7 +46,7 @@ def set_up(kite, instruments_helper):
     # threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(PARABOLIC_SAR))
     # threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(SUPER_TREND_STRATEGY_7_3))
     # threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(ADAPTIVE_SAR_STRATEGY))
-    threads.extend(StrategyFactory(kite, mode, instruments_helper).get_strategies(PARABOLIC_SAR_MTF))
+    threads.extend(StrategyFactory(kite, mode, orders, instruments_helper).get_strategies(PARABOLIC_SAR_MTF))
 
     # Get all strategies
     strategies = []

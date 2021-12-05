@@ -31,7 +31,10 @@ class Indicator(ABC):
         self.indicator_table_name = self.symbol + "_" + self.indicator_name
 
         # Historical dataframe
-        self.values = self.load_indicator_values()
+        if kwargs['stateless'] is True:
+            self.values = self.load_indicator_values(True)
+        else:
+            self.values = self.load_indicator_values(False)
 
         # Allowed time slots at which the indicator can run
         # This depends on the candle interval. i.e 1 min, 2 min, etc
@@ -151,13 +154,17 @@ class Indicator(ABC):
         df.to_sql(self.indicator_table_name, engine, if_exists='replace', index=True)
         engine.dispose()
 
-    def load_indicator_values(self):
+    def load_indicator_values(self, stateless=False):
         """
         Load the indicator values that were stored when the program ended
         By doing this load, we quickly regain context and do not have to
         build indicators from first in the start of trading day
         :return: dataframe containing the indicator values
         """
+        if stateless is True:
+            # We do not want previous trading session's values
+            return pd.DataFrame()
+
         engine = create_engine(f"sqlite:///" + self.indicator_db_path)
         try:
             cnx = engine.connect()
@@ -214,3 +221,10 @@ class Indicator(ABC):
 
     def get_candle_interval(self):
         return self.candle_interval
+
+    def plot(self):
+        """
+        Plots the indicator values for visual verification
+        :return The plot object. Visual plotting is decided by the main function
+        """
+        pass

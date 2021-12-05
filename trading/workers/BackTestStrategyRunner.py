@@ -31,3 +31,4 @@ class BackTestStrategyRunner(BackTestWorker):
     def stop(self, candle_time):
         for ind in self.strategy.get_indicators():
             ind.persist_indicator_values()
+

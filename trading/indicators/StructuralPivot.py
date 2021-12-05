@@ -7,6 +7,7 @@ class StructuralPivot(Indicator):
 
         self.prev_small_pivot = "na"
         self.prev_small_pivot_idx = 0
+        self.plt = None
 
     def do_calculate_lines(self, candle_time):
         ticks_df = self.get_data(candle_time)
@@ -16,11 +17,10 @@ class StructuralPivot(Indicator):
         self.store_indicator_value(ticks_df, candle_time)
 
         if len(self.values) - self.prev_small_pivot_idx < 3:
+            # Enough candles to find a pivot has not formed yet
             return
 
         df = self.values.copy()
-        sph_found = False
-        spl_found = False
 
         if self.prev_small_pivot == "na":
             sp_df, sph_found, sph_index = self.calculate_small_pivot_high(df)
@@ -91,3 +91,6 @@ class StructuralPivot(Indicator):
                             return df, True, i
 
         return df, False, -1
+
+    def plot(self):
+        pass

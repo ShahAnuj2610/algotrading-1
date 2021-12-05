@@ -15,9 +15,9 @@ class StructuralPivotMethodStrategyFactory:
         self.kite = kite
         self.mode = mode
         self.instruments_helper = kwargs['instruments_helper']
-        self.orders = kwargs['orders']
         self.opening_time = kwargs['opening_time']
         self.db_path = kwargs['db_path']
+        self.orders = kwargs['orders']
         self.candle_interval = kwargs['candle_interval']
 
     def get_strategies(self, name):
@@ -37,6 +37,9 @@ class StructuralPivotMethodStrategyFactory:
                                                                                            candle_interval=self.candle_interval,
                                                                                            instruments_helper=self.instruments_helper,
                                                                                            opening_time=self.opening_time,
+                                                                                           # If stateless is True, then the strategy will not
+                                                                                           # consider previous trading session's indicator values
+                                                                                           stateless=True,
                                                                                            mode=self.mode)))
 
         return strategy_workers

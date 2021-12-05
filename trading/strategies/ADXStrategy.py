@@ -35,7 +35,7 @@ class ADXStrategy(Strategy):
                          ],
                          **kwargs)
 
-    def act(self, candle_time):
+    def do_act(self, candle_time):
         pass
 
     def get_true_range_indicator(self):

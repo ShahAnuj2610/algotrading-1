@@ -35,7 +35,7 @@ class AdaptiveSARStrategy(Strategy):
                          ],
                          **kwargs)
 
-    def act(self, candle_time):
+    def do_act(self, candle_time):
         sar = self.adaptive_sar_indicator.get_lines(2, candle_time)
 
         prev_color = sar['color'][0]

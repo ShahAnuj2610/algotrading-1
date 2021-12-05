@@ -29,7 +29,7 @@ class ParabolicSARStrategy(Strategy):
                          ],
                          **kwargs)
 
-    def act(self, candle_time):
+    def do_act(self, candle_time):
         parabolic_sar = self.parabolic_sar_indicator.get_lines(2, candle_time)
 
         prev_color = parabolic_sar['color'][0]

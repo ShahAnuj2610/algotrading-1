@@ -28,7 +28,7 @@ class TicksDataManager:
             try:
                 tok = self.instruments_helper.get_symbol_from_instrument_token(tick['instrument_token'])
                 vals = [datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), tick['last_price'], tick['last_quantity']]
-                query = "INSERT OR REPLACE INTO {} (ts,price,volume) VALUES (?,?,?)".format(tok)
+                query = "INSERT OR REPLACE INTO {} (ts,current_price,volume) VALUES (?,?,?)".format(tok)
                 c.execute(query, vals)
             except:
                 logging.error("Exception while inserting ticks: " + traceback.format_exc())
@@ -54,8 +54,8 @@ class TicksDataManager:
         if df.empty:
             return df
 
-        ticks = df.loc[:, ['price']]
-        resampled_df = ticks['price'].resample(self.resample_time).ohlc()
+        ticks = df.loc[:, ['current_price']]
+        resampled_df = ticks['current_price'].resample(self.resample_time).ohlc()
         resampled_df.index = pd.to_datetime(resampled_df.index)
         resampled_df = resampled_df.sort_index(ascending=True)
         # resampled_df.dropna(inplace=True)

@@ -1,6 +1,7 @@
+import datetime
 import logging
 
-from trading.BackTestMain import back_test
+from trading.BackTestMain import back_test, back_test_range
 from trading.HistoricalDataMain import historical_data
 from trading.ScreenerMain import screen
 from trading.SetupMain import set_up
@@ -24,7 +25,8 @@ if __name__ == '__main__':
     kite = authorize()
     instruments_helper = InstrumentsHelper(kite, EXCHANGE)
 
-    back_test(kite, instruments_helper)
+    #back_test(kite, instruments_helper, datetime.datetime(2021, 12, 3, 9, 15, 0))
+    back_test_range(kite, instruments_helper)
     # historical_data(kite, instruments_helper)
 
     # screen(kite)

@@ -42,7 +42,7 @@ class SuperTrend73Strategy(Strategy):
                          ],
                          **kwargs)
 
-    def act(self, candle_time):
+    def do_act(self, candle_time):
         super_trend = self.super_trend_indicator.get_lines(2, candle_time)
 
         prev_color = super_trend['color'][0]

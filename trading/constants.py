@@ -1,5 +1,6 @@
 STORE_PATH = "trading/store/"
 CSV_PATH = STORE_PATH + "csv/"
+CHARTS_PATH = STORE_PATH + "charts/"
 ACCESS_TOKEN_DB_PATH = STORE_PATH + "db/auth/auth.db"
 BACK_TEST_OHLC_DB_PATH = STORE_PATH + "db/stock_data/ohlc.db"
 TICKS_DB_PATH = STORE_PATH + "db/stock_data/ticks.db"

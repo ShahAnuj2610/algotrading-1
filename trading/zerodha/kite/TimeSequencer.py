@@ -2,6 +2,13 @@ import datetime
 
 from trading.zerodha.kite.Period import Period
 
+trading_holidays = [
+    datetime.date(2021, 10, 15),
+    datetime.date(2021, 11, 4),
+    datetime.date(2021, 11, 5),
+    datetime.date(2021, 11, 19)
+]
+
 
 def get_time_sequence(period, candle_interval, candle_length, start_time):
     if start_time.hour > 15:
@@ -10,13 +17,6 @@ def get_time_sequence(period, candle_interval, candle_length, start_time):
     elif start_time.hour == 15 and start_time.minute > 30:
         raise ValueError(
             "Outside of market hours. Given hour {} and minute {}".format(start_time.hour, start_time.minute))
-
-    trading_holidays = [
-        datetime.date(2021, 10, 15),
-        datetime.date(2021, 11, 4),
-        datetime.date(2021, 11, 5),
-        datetime.date(2021, 11, 19)
-    ]
 
     sequence = []
     start_time = start_time.replace(second=0)
@@ -79,6 +79,23 @@ def get_previous_trading_day():
     return prev_time
 
 
+def get_n_previous_trading_days(n, start_date):
+    start = start_date
+    delta = datetime.timedelta(days=1)
+    trading_days = []
+
+    while n > 0:
+        if start.weekday() == 5 or start.weekday() == 6 or start in trading_holidays:
+            start = start - delta
+            continue
+
+        trading_days.append(start)
+        start = start - delta
+        n = n - 1
+
+    return trading_days
+
+
 def get_missing_time(actual_time_list, expected_time_list):
     expected_time_list = [str(i) for i in expected_time_list]
     actual_time_list = [str(i) for i in actual_time_list]
@@ -107,6 +124,7 @@ def get_allowed_time_slots(period, candle_interval):
 
     return allowed_time_slots
 
+
 '''
 print(get_time_sequence(Period.MIN, 1, 7, datetime.datetime(year=2021,
                                                             month=9,
@@ -115,5 +133,5 @@ print(get_time_sequence(Period.MIN, 1, 7, datetime.datetime(year=2021,
                                                             minute=55,
                                                             second=59,
                                                             microsecond=0)))
-print(get_allowed_time_slots(Period.MIN, 3))
+print(get_n_previous_trading_days(7, datetime.datetime(2021, 12, 3, 9, 15, 0)))
 '''
